@@ -1,0 +1,35 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.OneilAssignment2" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your dark theme here. -->
+        <item name="android:textColor">@color/white</item>
+        <item name="colorPrimary">@color/darkGrey</item>
+        <item name="colorPrimaryVariant">@color/grey</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/navyBlue</item>
+        <item name="colorSecondaryVariant">@color/darkNavyBlue1</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:windowBackground">@color/darkNavyBlue2</item>
+    </style>
+
+    <style name="TEXT_INPUT_OUTLINE">
+        <item name="android:background">@drawable/text_input_border_outline_dark</item>
+    </style>
+
+    <style name="DIVIDER">
+        <item name="android:background">@color/lightBlue</item>
+    </style>
+
+    <style name="CardView.DayNight">
+        <item name="android:background">@color/darkNavyBlue2</item>
+    </style>
+
+    <style name="COMMENTS">
+        <item name="android:background">@color/darkNavyBlue1</item>
+    </style>
+
+    <style name="POPUPS">
+        <item name="android:background">@color/darkTurquoise</item>
+    </style>
+
+</resources>

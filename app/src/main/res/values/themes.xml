@@ -1,0 +1,36 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.OneilAssignment2" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:textColor">#000000</item>
+        <item name="colorPrimary">@color/magenta</item>
+        <item name="colorPrimaryDark">@color/darkGrey</item>
+        <item name="colorPrimaryVariant">@color/pink</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/skyBlue1</item>
+        <item name="colorSecondaryVariant">@color/skyBlue2</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:windowBackground">@color/babyBlue</item>
+    </style>
+
+    <style name="TEXT_INPUT_OUTLINE">
+        <item name="android:background">@drawable/text_input_border_outline_light</item>
+    </style>
+
+    <style name="DIVIDER">
+        <item name="android:background">@color/lightBlue</item>
+    </style>
+
+    <style name="CardView.DayNight">
+        <item name="android:background">@color/babyBlue</item>
+    </style>
+
+    <style name="COMMENTS">
+        <item name="android:background">@color/skyBlue2</item>
+    </style>
+
+    <style name="POPUPS">
+        <item name="android:background">@color/skyBlue1</item>
+    </style>
+
+    <style name="Theme.OneilAssignment2" parent="Base.Theme.OneilAssignment2" />
+</resources>

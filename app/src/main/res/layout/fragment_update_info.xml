@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".UpdateInfoFragment">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/admin_update_info_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="30dp"
+            app:cardElevation="9dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/admin_update_info_constraint"
+                style="@style/POPUPS"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageButton
+                    android:id="@+id/admin_update_info_back_button"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="24dp"
+                    android:background="@drawable/ic_arrow_back"
+                    android:contentDescription="@string/image_of_back_button_text"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="TouchTargetSizeCheck" />
+
+                <TextView
+                    android:id="@+id/admin_update_info_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="60dp"
+                    android:layout_marginTop="32dp"
+                    android:layout_marginEnd="60dp"
+                    android:layout_marginBottom="32dp"
+                    android:text="@string/update_a_student_s_information_text"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toTopOf="@+id/admin_update_info_id_input"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <Button
+                    android:id="@+id/admin_update_info_update_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="24dp"
+                    android:text="@string/update_text"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/admin_update_info_dob_button" />
+
+                <EditText
+                    android:id="@+id/admin_update_info_id_input"
+                    style="@style/TEXT_INPUT_OUTLINE"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="24dp"
+                    android:importantForAutofill="no"
+                    android:ems="10"
+                    android:hint="@string/student_id_text"
+                    android:inputType="number"
+                    android:padding="10dp"
+                    app:layout_constraintBottom_toTopOf="@+id/admin_update_info_firstname_input"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/admin_update_info_title"
+                    tools:ignore="TextFields" />
+
+                <EditText
+                    android:id="@+id/admin_update_info_firstname_input"
+                    style="@style/TEXT_INPUT_OUTLINE"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="24dp"
+                    android:autofillHints="name"
+                    android:ems="10"
+                    android:hint="@string/first_name_text"
+                    android:inputType="text"
+                    android:padding="10dp"
+                    app:layout_constraintBottom_toTopOf="@+id/admin_update_info_surname_input"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/admin_update_info_id_input" />
+
+                <EditText
+                    android:id="@+id/admin_update_info_surname_input"
+                    style="@style/TEXT_INPUT_OUTLINE"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="24dp"
+                    android:autofillHints="name"
+                    android:ems="10"
+                    android:hint="@string/surname_text"
+                    android:inputType="text"
+                    android:padding="10dp"
+                    app:layout_constraintBottom_toTopOf="@+id/admin_update_info_email_input"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/admin_update_info_firstname_input" />
+
+                <EditText
+                    android:id="@+id/admin_update_info_email_input"
+                    style="@style/TEXT_INPUT_OUTLINE"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="24dp"
+                    android:autofillHints="emailAddress"
+                    android:ems="10"
+                    android:hint="@string/email_text"
+                    android:inputType="textEmailAddress"
+                    android:padding="10dp"
+                    app:layout_constraintBottom_toTopOf="@+id/admin_update_info_dob_text"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/admin_update_info_surname_input" />
+
+                <TextView
+                    android:id="@+id/admin_update_info_dob_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:textStyle="bold"
+                    android:text="@string/date_of_birth_text"
+                    app:layout_constraintBottom_toTopOf="@+id/admin_update_info_dob_button"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/admin_update_info_email_input" />
+
+                <Button
+                    android:id="@+id/admin_update_info_dob_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    android:text="@string/select_date_text"
+                    app:layout_constraintBottom_toTopOf="@+id/admin_update_info_update_button"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/admin_update_info_dob_text" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>
