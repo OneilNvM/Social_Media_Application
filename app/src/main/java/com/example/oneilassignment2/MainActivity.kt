@@ -12,7 +12,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -62,7 +61,6 @@ class MainActivity : AppCompatActivity() {
         val mainLoginButton = findViewById<Button>(R.id.main_login_button)
         val mainRegisterButton = findViewById<Button>(R.id.main_register_button)
 
-        val mainFragmentContainer = findViewById<FrameLayout>(R.id.main_fragment_container)
         val logoutButton = findViewById<ImageButton>(R.id.home_logout_button)
         val homeButton = findViewById<ImageButton>(R.id.h_home_button)
         val postButton = findViewById<ImageButton>(R.id.home_add_button)

@@ -44,7 +44,6 @@ class SettingsActivity : AppCompatActivity() {
 
 //        Set variables for main activity, database, and other views
         val db = SchoolSQLiteDatabase(this)
-        val mainActivity = MainActivity()
 
         val userSession = getSharedPreferences("USER_SESSION", MODE_PRIVATE)
         val userId = userSession.getInt("student_id", 0)
