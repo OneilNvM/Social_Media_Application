@@ -1,6 +1,7 @@
 package com.example.oneilassignment2
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
@@ -163,6 +164,9 @@ class SettingsActivity : AppCompatActivity() {
 
 //                            Performs operations to log the user out
                             userSession.edit().clear().apply()
+
+                            val intent = Intent(this, MainActivity::class.java)
+                            startActivity(intent)
 
                             finish()
                         }
@@ -411,6 +415,9 @@ class SettingsActivity : AppCompatActivity() {
 
                 Toast.makeText(this, "Account Deleted", Toast.LENGTH_SHORT).show()
 
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+
                 finish()
             } catch (e: Exception) {
                 Toast.makeText(
@@ -426,6 +433,9 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         closeButton.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+
             finish()
         }
 

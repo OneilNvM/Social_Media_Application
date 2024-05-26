@@ -329,6 +329,8 @@ and restores the main activity views
         settingsButton.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
+
+            finish()
         }
     }
 
