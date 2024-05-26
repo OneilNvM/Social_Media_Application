@@ -1,96 +1,71 @@
 package com.example.oneilassignment2
 
 import android.annotation.SuppressLint
-import android.content.Context.MODE_PRIVATE
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SwitchCompat
 import androidx.cardview.widget.CardView
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-class SettingsFragment : Fragment() {
+class SettingsActivity : AppCompatActivity() {
 
-//    Set variable for the dark mode switch
     private var isDarkMode: Boolean = false
 
-//    Save an instance state for the dark mode switch
     override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-
         outState.putBoolean("isDarkMode", isDarkMode)
+
+        super.onSaveInstanceState(outState)
     }
 
-//    Restore the dark mode switch instance state
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        isDarkMode = savedInstanceState.getBoolean("isDarkMode")
 
-        if (savedInstanceState != null) {
-            isDarkMode = savedInstanceState.getBoolean("isDarkMode")
-        }
+        super.onRestoreInstanceState(savedInstanceState)
     }
 
     @SuppressLint("SimpleDateFormat")
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_settings, container, false)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContentView(R.layout.activity_settings)
+
 //        Set variables for main activity, database, and other views
-        val mainActivity = requireActivity() as MainActivity
-        val db = SchoolSQLiteDatabase(mainActivity)
+        val db = SchoolSQLiteDatabase(this)
+        val mainActivity = MainActivity()
 
-        val mainHeader1 = mainActivity.findViewById<TextView>(R.id.main_header_1)
-        val mainHeader2 = mainActivity.findViewById<TextView>(R.id.main_header_2)
-        val mainHeader3 = mainActivity.findViewById<TextView>(R.id.main_header_3)
-        val mainLoginButton = mainActivity.findViewById<Button>(R.id.main_login_button)
-        val mainRegisterButton = mainActivity.findViewById<Button>(R.id.main_register_button)
-        val mainBackgroundImage = mainActivity.findViewById<ImageView>(R.id.main_background_image)
-
-        val userSession = mainActivity.getSharedPreferences("USER_SESSION", MODE_PRIVATE)
+        val userSession = getSharedPreferences("USER_SESSION", MODE_PRIVATE)
         val userId = userSession.getInt("student_id", 0)
 
-        val mainFragmentContainer =
-            mainActivity.findViewById<FrameLayout>(R.id.main_fragment_container)
-        val homeNavBar = mainActivity.findViewById<ConstraintLayout>(R.id.home_navigation_bar)
-        val homeTopHeader = mainActivity.findViewById<ConstraintLayout>(R.id.home_top_header)
-        val mainDivider1 = mainActivity.findViewById<View>(R.id.main_divider_1)
-        val mainDivider2 = mainActivity.findViewById<View>(R.id.main_divider_2)
+        val darkModeSwitch = findViewById<SwitchCompat>(R.id.settings_toggle_dark_switch)
+        val resetPasswordButton = findViewById<Button>(R.id.settings_reset_password_button)
+        val deleteAccountButton = findViewById<Button>(R.id.settings_delete_acc_button)
+        val closeButton = findViewById<ImageButton>(R.id.settings_close_button)
 
-        val darkModeSwitch = view.findViewById<SwitchCompat>(R.id.settings_toggle_dark_switch)
-        val resetPasswordButton = view.findViewById<Button>(R.id.settings_reset_password_button)
-        val deleteAccountButton = view.findViewById<Button>(R.id.settings_delete_acc_button)
-        val closeButton = view.findViewById<ImageButton>(R.id.settings_close_button)
+        val deleteAccountCard = findViewById<CardView>(R.id.settings_delete_acc_card)
+        val confirmDelete = findViewById<TextView>(R.id.settings_delete_acc_yes_button)
+        val cancelDelete = findViewById<TextView>(R.id.settings_delete_acc_no_button)
 
-        val deleteAccountCard = view.findViewById<CardView>(R.id.settings_delete_acc_card)
-        val confirmDelete = view.findViewById<TextView>(R.id.settings_delete_acc_yes_button)
-        val cancelDelete = view.findViewById<TextView>(R.id.settings_delete_acc_no_button)
+        val resetPasswordCard = findViewById<CardView>(R.id.settings_reset_password_card)
+        val oldPasswordInput = findViewById<EditText>(R.id.settings_reset_password_old_input)
+        val newPasswordInput = findViewById<EditText>(R.id.settings_reset_password_new_input)
+        val confirmReset = findViewById<TextView>(R.id.settings_reset_password_confirm_button)
+        val cancelReset = findViewById<ImageView>(R.id.settings_reset_password_cancel_button)
 
-        val resetPasswordCard = view.findViewById<CardView>(R.id.settings_reset_password_card)
-        val oldPasswordInput = view.findViewById<EditText>(R.id.settings_reset_password_old_input)
-        val newPasswordInput = view.findViewById<EditText>(R.id.settings_reset_password_new_input)
-        val confirmReset = view.findViewById<TextView>(R.id.settings_reset_password_confirm_button)
-        val cancelReset = view.findViewById<ImageView>(R.id.settings_reset_password_cancel_button)
-
-//        Check the current UI configuration and adjust the value of the dark mode switch
+        //        Check the current UI configuration and adjust the value of the dark mode switch
         try {
-            if (mainActivity.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
+            if (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
                 darkModeSwitch.isChecked = true
                 isDarkMode = true
                 darkModeSwitch.text = getString(R.string.enabled_text)
@@ -103,41 +78,33 @@ class SettingsFragment : Fragment() {
                 darkModeSwitch.text = getString(R.string.disabled_text)
             }
         } catch (e: Exception) {
-            Log.e("SettingsFragment", "There was an error when checking UI configuration")
+            Log.e("SettingsActivity", "There was an error when checking UI configuration")
         }
 
-//        Dark mode switch checks what value the dark mode variable is set to and adjusts the UI accordingly
+        //        Dark mode switch checks what value the dark mode variable is set to and adjusts the UI accordingly
         darkModeSwitch.setOnClickListener {
             try {
                 if (!isDarkMode) {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
                     isDarkMode = true
 
-                    mainActivity.recreate()
+                    this.recreate()
 
-                    Toast.makeText(mainActivity, "Dark Mode Enabled", Toast.LENGTH_SHORT).show()
-
-                    parentFragmentManager.popBackStack()
-
-                    mainActivity.supportFragmentManager.popBackStack(null, POP_BACK_STACK_INCLUSIVE)
+                    Toast.makeText(this, "Dark Mode Enabled", Toast.LENGTH_SHORT).show()
                 } else {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
                     isDarkMode = false
 
-                    mainActivity.recreate()
+                    this.recreate()
 
-                    Toast.makeText(mainActivity, "Dark Mode Disabled", Toast.LENGTH_SHORT).show()
-
-                    parentFragmentManager.popBackStack()
-
-                    mainActivity.supportFragmentManager.popBackStack(null, POP_BACK_STACK_INCLUSIVE)
+                    Toast.makeText(this, "Dark Mode Disabled", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Log.e("SettingsFragment", "There was an error when changing UI configuration")
             }
         }
 
-//        Handles UI based on dark mode
+        //        Handles UI based on dark mode
         if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
             closeButton.setBackgroundResource(R.drawable.baseline_close_24_white)
             cancelReset.setBackgroundResource(R.drawable.baseline_close_24_white)
@@ -150,7 +117,7 @@ class SettingsFragment : Fragment() {
             resetPasswordCard.visibility = View.VISIBLE
         }
 
-//        Confirms the password reset
+        //        Confirms the password reset
         confirmReset.setOnClickListener {
             val student = db.retrieveStudent(userId)
             val currentDateTime = Calendar.getInstance().time
@@ -186,7 +153,7 @@ class SettingsFragment : Fragment() {
                                 newPassword,
                                 formattedDate
                             )
-                            Toast.makeText(mainActivity, "Password Updated", Toast.LENGTH_SHORT)
+                            Toast.makeText(this, "Password Updated", Toast.LENGTH_SHORT)
                                 .show()
 
                             resetPasswordCard.visibility = View.GONE
@@ -197,25 +164,13 @@ class SettingsFragment : Fragment() {
 //                            Performs operations to log the user out
                             userSession.edit().clear().apply()
 
-                            parentFragmentManager.popBackStack()
-
-                            mainActivity.supportFragmentManager.popBackStack()
-
-                            mainLoginButton.visibility = View.VISIBLE
-                            mainRegisterButton.visibility = View.VISIBLE
-                            mainHeader1.visibility = View.VISIBLE
-                            mainHeader2.visibility = View.VISIBLE
-                            mainHeader3.visibility = View.VISIBLE
-
-                            mainBackgroundImage.visibility = View.VISIBLE
-
-                            mainFragmentContainer.visibility = View.VISIBLE
+                            finish()
                         }
                     }
                 }
             } catch (e: Exception) {
                 Toast.makeText(
-                    mainActivity,
+                    this,
                     "There was an error updating the password",
                     Toast.LENGTH_SHORT
                 ).show()
@@ -231,7 +186,7 @@ class SettingsFragment : Fragment() {
             deleteAccountCard.visibility = View.VISIBLE
         }
 
-//        Confirms the deletion of an account
+        //        Confirms the deletion of an account
         confirmDelete.setOnClickListener {
             try {
                 val studentLikes = db.retrieveStudentLikes(userId)
@@ -454,24 +409,12 @@ class SettingsFragment : Fragment() {
 //                Final operations to log the user out
                 userSession.edit().clear().apply()
 
-                Toast.makeText(mainActivity, "Account Deleted", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Account Deleted", Toast.LENGTH_SHORT).show()
 
-                parentFragmentManager.popBackStack()
-
-                mainActivity.supportFragmentManager.popBackStack()
-
-                mainLoginButton.visibility = View.VISIBLE
-                mainRegisterButton.visibility = View.VISIBLE
-                mainHeader1.visibility = View.VISIBLE
-                mainHeader2.visibility = View.VISIBLE
-                mainHeader3.visibility = View.VISIBLE
-
-                mainBackgroundImage.visibility = View.VISIBLE
-
-                mainFragmentContainer.visibility = View.VISIBLE
+                finish()
             } catch (e: Exception) {
                 Toast.makeText(
-                    mainActivity,
+                    this,
                     "There was an error deleting the account",
                     Toast.LENGTH_SHORT
                 ).show()
@@ -483,17 +426,9 @@ class SettingsFragment : Fragment() {
         }
 
         closeButton.setOnClickListener {
-            parentFragmentManager.popBackStack()
-
-            homeNavBar.visibility = View.VISIBLE
-            homeTopHeader.visibility = View.VISIBLE
-            mainDivider1.visibility = View.VISIBLE
-            mainDivider2.visibility = View.VISIBLE
-            mainFragmentContainer.visibility = View.VISIBLE
+            finish()
         }
 
         db.close()
-
-        return view
     }
 }

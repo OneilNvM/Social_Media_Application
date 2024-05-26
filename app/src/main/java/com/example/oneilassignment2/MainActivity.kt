@@ -2,6 +2,7 @@ package com.example.oneilassignment2
 
 import android.Manifest
 import android.content.ContentValues.TAG
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.ColorMatrix
@@ -25,6 +26,17 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
 
 class MainActivity : AppCompatActivity() {
+
+    private var isDarkMode: Boolean = false
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+
+
+        isDarkMode = savedInstanceState.getBoolean("isDarkMode")
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -315,18 +327,8 @@ and restores the main activity views
 
 //        Opens the settings fragment
         settingsButton.setOnClickListener {
-            if (supportFragmentManager.findFragmentById(R.id.main_fragment_container) !is SettingsFragment) {
-                supportFragmentManager.beginTransaction()
-                    .add(R.id.full_frame_fragment_container, SettingsFragment())
-                    .addToBackStack(null)
-                    .commit()
-
-                homeTopHeader.visibility = View.GONE
-                homeNavBar.visibility = View.GONE
-                mainDivider1.visibility = View.GONE
-                mainDivider2.visibility = View.GONE
-                mainFragmentContainer.visibility = View.GONE
-            }
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
         }
     }
 

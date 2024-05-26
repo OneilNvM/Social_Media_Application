@@ -10,6 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 
 class AdminFragment : Fragment() {
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
