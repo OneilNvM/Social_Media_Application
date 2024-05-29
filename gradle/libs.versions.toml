@@ -10,12 +10,8 @@ appcompat = "1.6.1"
 material = "1.12.0"
 activity = "1.9.0"
 constraintlayout = "2.1.4"
-fragmentKtx = "1.5.7"
-activityKtx = "1.9.0"
 swiperefreshlayout = "1.1.0"
-uiGraphicsAndroid = "1.6.7"
-uiGraphicsDesktop = "1.6.7"
-glance = "1.0.0"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -28,11 +24,7 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentKtx" }
-androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
-androidx-ui-graphics-android = { group = "androidx.compose.ui", name = "ui-graphics-android", version.ref = "uiGraphicsAndroid" }
-androidx-ui-graphics-desktop = { group = "androidx.compose.ui", name = "ui-graphics-desktop", version.ref = "uiGraphicsDesktop" }
-androidx-glance = { group = "androidx.glance", name = "glance", version.ref = "glance" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
