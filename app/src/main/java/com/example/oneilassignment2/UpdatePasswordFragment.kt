@@ -47,8 +47,8 @@ class UpdatePasswordFragment : Fragment() {
             // Perform update password operation here
             try {
                 if (studentId.isEmpty() || newPassword.isEmpty()) {
-                    Toast.makeText(mainActivity, "Please fill in both fields", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(mainActivity, "Please fill in both fields", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
                 } else {
                     db.updateStudent(
                         studentId.toInt(),
@@ -59,6 +59,8 @@ class UpdatePasswordFragment : Fragment() {
                         newPassword,
                         formattedDate
                     )
+
+                    db.close()
                 }
                 parentFragmentManager.popBackStack()
                 Toast.makeText(mainActivity, "Password updated successfully", Toast.LENGTH_SHORT)
@@ -68,10 +70,10 @@ class UpdatePasswordFragment : Fragment() {
             }
         }
 
-        db.close()
-
         backButton.setOnClickListener {
             parentFragmentManager.popBackStack()
+
+            db.close()
         }
 
         return view

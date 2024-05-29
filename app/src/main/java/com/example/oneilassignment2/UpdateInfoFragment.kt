@@ -136,6 +136,8 @@ class UpdateInfoFragment : Fragment() {
                         "Student info updated successfully",
                         Toast.LENGTH_SHORT
                     ).show()
+
+                    db.close()
                 } catch (e: Exception) {
                     Toast.makeText(mainActivity, "Failed to update student info", Toast.LENGTH_SHORT)
                         .show()
@@ -143,10 +145,10 @@ class UpdateInfoFragment : Fragment() {
             }
         }
 
-        db.close()
-
         backButton.setOnClickListener {
             parentFragmentManager.popBackStack()
+
+            db.close()
         }
 
         return view

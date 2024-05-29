@@ -331,6 +331,11 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
 
 //    Comments Methods
 
+    fun retrieveComment(commentId: Int): Cursor? {
+        val db = readableDatabase
+        return db.rawQuery("SELECT * FROM $commentsTable WHERE $commentsId = $commentId", null)
+    }
+
     fun retrieveComments(postId: Int): Cursor? {
         val db = readableDatabase
         return db.rawQuery("SELECT * FROM $commentsTable WHERE $commentsPostIDRef = $postId", null)

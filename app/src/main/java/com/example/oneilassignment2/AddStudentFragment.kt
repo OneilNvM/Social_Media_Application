@@ -26,7 +26,7 @@ class AddStudentFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_add_student, container, false)
 
 //        Touch event set to nothing to prevent interaction with background views whilst this fragment is visible
-        view.setOnTouchListener { _, _ ->  return@setOnTouchListener true}
+        view.setOnTouchListener { _, _ -> return@setOnTouchListener true }
 
 //        Set variables for views, database and main activity
         val mainActivity = requireActivity() as MainActivity
@@ -71,7 +71,10 @@ class AddStudentFragment : Fragment() {
 
         addStudentButton.setOnClickListener {
 //            Check if any of the fields are empty before adding the student
-            if (firstNameInput.text.toString().isEmpty() && surnameInput.text.toString().isEmpty() && emailInput.text.toString().isEmpty() && passwordInput.text.toString().isEmpty()) {
+            if (firstNameInput.text.toString().isEmpty() && surnameInput.text.toString()
+                    .isEmpty() && emailInput.text.toString()
+                    .isEmpty() && passwordInput.text.toString().isEmpty()
+            ) {
                 Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
             } else {
                 if (firstNameInput.text.toString().isEmpty()) {
@@ -80,10 +83,11 @@ class AddStudentFragment : Fragment() {
                     surnameInput.error = "Please enter a surname"
                 } else if (emailInput.text.toString().isEmpty()) {
                     emailInput.error = "Please enter an email"
-                }  else if (!emailInput.text.toString().endsWith("@school.co.uk")) {
+                } else if (!emailInput.text.toString().endsWith("@school.co.uk")) {
                     emailInput.error = "Email must end with '@school.co.uk'"
                 } else if (dateOfBirthText.text.toString() == getString(R.string.date_of_birth_text)) {
-                    Toast.makeText(context, "Please select a date of birth", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Please select a date of birth", Toast.LENGTH_SHORT)
+                        .show()
                 } else if (passwordInput.text.toString().isEmpty()) {
                     passwordInput.error = "Please enter a password"
                 } else if (passwordInput.text.toString().length < 8) {
@@ -115,22 +119,28 @@ class AddStudentFragment : Fragment() {
                         Toast.makeText(context, "Student added successfully", Toast.LENGTH_SHORT)
                             .show()
 
+                        db.close()
+
                         firstNameInput.text.clear()
                         surnameInput.text.clear()
                         emailInput.text.clear()
                         dateOfBirthText.text = getString(R.string.date_of_birth_text)
                         passwordInput.text.clear()
                     } catch (e: Exception) {
-                        Toast.makeText(context, "There was an error when trying to add the student", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "There was an error when trying to add the student",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
         }
 
-        db.close()
-
         backButton.setOnClickListener {
-         parentFragmentManager.popBackStack()
+            parentFragmentManager.popBackStack()
+
+            db.close()
         }
 
         return view
