@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.ContentValues
 import android.content.Context.MODE_PRIVATE
-import android.database.Cursor
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -18,21 +17,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.cardview.widget.CardView
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-class ProfileFragment : Fragment(), ProfileRecyclerViewInterface {
+class ProfileFragment : Fragment() {
 
-    //    Create lateinit variables for the list of posts, the adapter, and the view model
-    private lateinit var listOfPosts: ArrayList<PostData>
-    private lateinit var rcvAdapter: ProfileRecyclerViewAdapter
-    private lateinit var sharedViewModel: PostDataViewModel
-
-    @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
+    @SuppressLint("SetTextI18n", "NotifyDataSetChanged", "SimpleDateFormat")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -43,7 +33,6 @@ class ProfileFragment : Fragment(), ProfileRecyclerViewInterface {
 //        Set teh variables for the main activity, database and other views
         val mainActivity = requireActivity() as MainActivity
         val db = SchoolSQLiteDatabase(mainActivity)
-        sharedViewModel = ViewModelProvider(mainActivity)[PostDataViewModel::class.java]
 
         val userSession = mainActivity.getSharedPreferences("USER_SESSION", MODE_PRIVATE)
         val userId = userSession.getInt("student_id", 0)
@@ -52,9 +41,6 @@ class ProfileFragment : Fragment(), ProfileRecyclerViewInterface {
 //        Grab the first name of the student from the shared preference
         val studentName = view.findViewById<TextView>(R.id.profile_student_first_name)
         val joinDate = view.findViewById<TextView>(R.id.profile_student_join_date)
-        val profileRecyclerView = view.findViewById<RecyclerView>(R.id.profile_posts_recycler_view)
-        val swipeRefreshLayout =
-            view.findViewById<SwipeRefreshLayout>(R.id.profile_post_swipe_refresh_layout)
 
         val profileEditButton = view.findViewById<Button>(R.id.edit_profile_button)
         val profileEditCard = view.findViewById<CardView>(R.id.profile_edit_card)
@@ -65,6 +51,14 @@ class ProfileFragment : Fragment(), ProfileRecyclerViewInterface {
         val profileEditEmailInput = view.findViewById<EditText>(R.id.profile_edit_email_input)
         val profileEditDateOfBirthButton = view.findViewById<Button>(R.id.profile_edit_dob_button)
         val profileEditDateOfBirthText = view.findViewById<TextView>(R.id.profile_edit_dob_text)
+        val profileHomeButton = view.findViewById<Button>(R.id.profile_home_button)
+        val profileLikesButton = view.findViewById<Button>(R.id.profile_likes_button)
+
+        parentFragmentManager.beginTransaction()
+            .add(R.id.profile_fragment_container, ProfilePostsFragment())
+            .commit()
+
+        profileHomeButton.setTextColor(resources.getColor(R.color.magenta, null))
 
 //        Handle UI changes based on dark mode
         if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
@@ -195,271 +189,39 @@ class ProfileFragment : Fragment(), ProfileRecyclerViewInterface {
         }
         student?.close()
 
-//        Setup the swipe refresh functionality for the recycler view
-        swipeRefreshLayout.setOnRefreshListener {
-            listOfPosts.clear()
-            addPostsToList()
-            rcvAdapter.notifyDataSetChanged()
-            swipeRefreshLayout.isRefreshing = false
+        profileHomeButton.setOnClickListener {
+            if (parentFragmentManager.findFragmentById(R.id.profile_fragment_container) !is ProfilePostsFragment) {
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.profile_fragment_container, ProfilePostsFragment())
+                    .commit()
+
+                if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+                    profileLikesButton.setTextColor(resources.getColor(R.color.white, null))
+                } else {
+                    profileLikesButton.setTextColor(resources.getColor(R.color.black, null))
+                }
+
+                profileHomeButton.setTextColor(resources.getColor(R.color.magenta, null))
+            }
         }
 
-//        Setup the recycler view
-        profileRecyclerView.itemAnimator = null
+        profileLikesButton.setOnClickListener {
+            if (parentFragmentManager.findFragmentById(R.id.profile_fragment_container) !is ProfileLikesFragment) {
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.profile_fragment_container, ProfileLikesFragment())
+                    .commit()
 
-        listOfPosts = ArrayList()
+                if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+                    profileHomeButton.setTextColor(resources.getColor(R.color.white, null))
+                } else {
+                    profileHomeButton.setTextColor(resources.getColor(R.color.black, null))
+                }
 
-        addPostsToList()
-
-        profileRecyclerView.layoutManager = LinearLayoutManager(mainActivity)
-
-        rcvAdapter = ProfileRecyclerViewAdapter(listOfPosts, this)
-
-        profileRecyclerView.adapter = rcvAdapter
+                profileLikesButton.setTextColor(resources.getColor(R.color.magenta, null))
+            }
+        }
 
         db.close()
         return view
-    }
-
-    //    Function to add posts to the listOfPosts variable
-    private fun addPostsToList() {
-        val db = SchoolSQLiteDatabase(requireActivity())
-        val userSession = requireActivity().getSharedPreferences("USER_SESSION", MODE_PRIVATE)
-        val userId = userSession.getInt("student_id", 0)
-        val cursor: Cursor? = db.retrieveStudentPosts(userId)
-
-        try {
-            if (cursor != null) {
-                if (cursor.count > 0) {
-                    cursor.moveToFirst()
-                    while (!cursor.isAfterLast) {
-                        val postId = cursor.getInt(cursor.getColumnIndexOrThrow("post_id"))
-                        val posterId = cursor.getInt(cursor.getColumnIndexOrThrow("student_id"))
-                        val posterName =
-                            cursor.getString(cursor.getColumnIndexOrThrow("poster_name"))
-                        val postCaption = cursor.getString(cursor.getColumnIndexOrThrow("caption"))
-                        val postDate = cursor.getString(cursor.getColumnIndexOrThrow("date"))
-                        val numLikes = cursor.getInt(cursor.getColumnIndexOrThrow("num_of_likes"))
-                        val numComments =
-                            cursor.getInt(cursor.getColumnIndexOrThrow("num_of_comments"))
-
-                        val isLikedCursor = db.retrieveLike(postId, userId)
-                        var isLiked = false
-
-                        if (isLikedCursor != null) {
-                            isLiked = isLikedCursor.count > 0
-                        }
-
-                        isLikedCursor?.close()
-
-                        val post = PostData(
-                            postId,
-                            posterId,
-                            posterName,
-                            postCaption,
-                            numLikes,
-                            numComments,
-                            postDate,
-                            isLiked
-                        )
-
-                        listOfPosts.add(post)
-
-                        cursor.moveToNext()
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(ContentValues.TAG, "Error trying to add posts to list: ${e.message}")
-        }
-        cursor?.close()
-        db.close()
-    }
-
-    //    Interface function handles click events on the like button on the posts
-    override fun onLikeButtonClicked(post: PostData, position: Int) {
-        val mainActivity = requireActivity() as MainActivity
-        val userSession = mainActivity.getSharedPreferences("USER_SESSION", MODE_PRIVATE)
-        val userId = userSession.getInt("student_id", 0)
-        val db = SchoolSQLiteDatabase(requireActivity())
-        val dbWrite = SchoolSQLiteDatabase(requireActivity()).writableDatabase
-        var cursor: Cursor?
-
-        val query = "SELECT * FROM posts WHERE student_id = ? AND post_id = ?"
-
-        cursor = dbWrite.rawQuery(query, arrayOf(post.posterId.toString(), post.postId.toString()))
-        try {
-            if (cursor != null) {
-                if (cursor.count > 0) {
-                    var exactPost = PostData(0, 0, "", "", 0, 0, "")
-
-                    cursor.moveToFirst()
-
-                    while (!cursor.isAfterLast) {
-                        val postId = cursor.getInt(cursor.getColumnIndexOrThrow("post_id"))
-                        val posterId = cursor.getInt(cursor.getColumnIndexOrThrow("student_id"))
-                        val posterName =
-                            cursor.getString(cursor.getColumnIndexOrThrow("poster_name"))
-                        val postCaption = cursor.getString(cursor.getColumnIndexOrThrow("caption"))
-                        val postDate = cursor.getString(cursor.getColumnIndexOrThrow("date"))
-                        val numLikes = cursor.getInt(cursor.getColumnIndexOrThrow("num_of_likes"))
-                        val numComments =
-                            cursor.getInt(cursor.getColumnIndexOrThrow("num_of_comments"))
-
-                        exactPost = PostData(
-                            postId,
-                            posterId,
-                            posterName,
-                            postCaption,
-                            numLikes,
-                            numComments,
-                            postDate
-                        )
-
-                        cursor.moveToNext()
-                    }
-
-                    cursor = dbWrite.rawQuery(
-                        "SELECT * FROM likes WHERE student_id = ? AND post_id = ?",
-                        arrayOf(userId.toString(), exactPost.postId.toString())
-                    )
-
-                    if (cursor != null) {
-                        if (cursor.count > 0) {
-                            db.updatePost(
-                                exactPost.postId,
-                                null,
-                                null,
-                                exactPost.numOfLikes - 1,
-                                null,
-                                null
-                            )
-                            db.deletePostLike(userId, exactPost.postId)
-
-                            cursor = db.retrievePost(exactPost.postId)
-
-                            if (cursor != null) {
-                                if (cursor.count > 0) {
-                                    cursor.moveToFirst()
-                                    var newestPost = PostData(0, 0, "", "", 0, 0, "")
-
-                                    while (!cursor.isAfterLast) {
-                                        val postId =
-                                            cursor.getInt(cursor.getColumnIndexOrThrow("post_id"))
-                                        val posterId =
-                                            cursor.getInt(cursor.getColumnIndexOrThrow("student_id"))
-                                        val posterName =
-                                            cursor.getString(cursor.getColumnIndexOrThrow("poster_name"))
-                                        val postCaption =
-                                            cursor.getString(cursor.getColumnIndexOrThrow("caption"))
-                                        val postDate =
-                                            cursor.getString(cursor.getColumnIndexOrThrow("date"))
-                                        val numLikes =
-                                            cursor.getInt(cursor.getColumnIndexOrThrow("num_of_likes"))
-                                        val numComments =
-                                            cursor.getInt(cursor.getColumnIndexOrThrow("num_of_comments"))
-
-                                        newestPost = PostData(
-                                            postId,
-                                            posterId,
-                                            posterName,
-                                            postCaption,
-                                            numLikes,
-                                            numComments,
-                                            postDate
-                                        )
-
-                                        cursor.moveToNext()
-                                    }
-                                    val arrayOfPost = ArrayList<PostData>()
-                                    arrayOfPost.add(newestPost)
-
-                                    rcvAdapter.updateItems(arrayOfPost, position)
-                                }
-                            }
-                        } else {
-                            db.updatePost(
-                                exactPost.postId,
-                                null,
-                                null,
-                                exactPost.numOfLikes + 1,
-                                null,
-                                null
-                            )
-                            db.insertPostLike(userId, exactPost.postId)
-
-                            cursor = db.retrievePost(exactPost.postId)
-
-                            if (cursor != null) {
-                                if (cursor.count > 0) {
-                                    cursor.moveToFirst()
-                                    var newestPost = PostData(0, 0, "", "", 0, 0, "")
-
-                                    while (!cursor.isAfterLast) {
-                                        val postId =
-                                            cursor.getInt(cursor.getColumnIndexOrThrow("post_id"))
-                                        val posterId =
-                                            cursor.getInt(cursor.getColumnIndexOrThrow("student_id"))
-                                        val posterName =
-                                            cursor.getString(cursor.getColumnIndexOrThrow("poster_name"))
-                                        val postCaption =
-                                            cursor.getString(cursor.getColumnIndexOrThrow("caption"))
-                                        val postDate =
-                                            cursor.getString(cursor.getColumnIndexOrThrow("date"))
-                                        val numLikes =
-                                            cursor.getInt(cursor.getColumnIndexOrThrow("num_of_likes"))
-                                        val numComments =
-                                            cursor.getInt(cursor.getColumnIndexOrThrow("num_of_comments"))
-
-                                        newestPost = PostData(
-                                            postId,
-                                            posterId,
-                                            posterName,
-                                            postCaption,
-                                            numLikes,
-                                            numComments,
-                                            postDate,
-                                            true
-                                        )
-
-                                        cursor.moveToNext()
-                                    }
-                                    val arrayOfPost = ArrayList<PostData>()
-                                    arrayOfPost.add(newestPost)
-
-                                    rcvAdapter.updateItems(arrayOfPost, position)
-                                }
-                            }
-                        }
-                    }
-                    cursor?.close()
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        cursor?.close()
-        dbWrite.close()
-
-        db.close()
-    }
-
-    //    Interface function handles click events on the comment button on the posts
-    override fun onCommentButtonClicked(post: PostData, position: Int) {
-        sharedViewModel.post = post
-
-        parentFragmentManager.beginTransaction()
-            .add(R.id.comments_fragment_container, CommentsFragment())
-            .addToBackStack(null)
-            .commit()
-    }
-
-    //    Interface function handles click events on the edit post button on the posts
-    override fun onEditButtonClicked(post: PostData, position: Int) {
-        sharedViewModel.post = post
-
-        parentFragmentManager.beginTransaction()
-            .add(R.id.full_frame_fragment_container, EditPostFragment())
-            .addToBackStack(null)
-            .commit()
     }
 }

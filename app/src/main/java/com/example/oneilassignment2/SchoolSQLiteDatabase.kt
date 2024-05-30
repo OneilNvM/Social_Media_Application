@@ -233,6 +233,11 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
         return cursor
     }
 
+    fun retrieveStudentLikesOrdered(studentID: Int): Cursor? {
+        val db = readableDatabase
+        return db.rawQuery("SELECT * FROM $likesTable WHERE $likesStudentIDRef = $studentID ORDER BY $likesId DESC", null)
+    }
+
     fun retrieveStudentLikes(studentID: Int): Cursor? {
         val db = readableDatabase
         return db.rawQuery("SELECT * FROM $likesTable WHERE $likesStudentIDRef = $studentID", null)

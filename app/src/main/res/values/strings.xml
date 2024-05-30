@@ -74,4 +74,7 @@
     <string name="edit_profile_text">Edit Profile</string>
     <string name="edit_your_profile_text">Edit your profile</string>
     <string name="save_text">Save</string>
+    <string name="likes_text">Likes</string>
+    <string name="no_posts_text">No Posts</string>
+    <string name="no_likes_text">No Likes</string>
 </resources>
