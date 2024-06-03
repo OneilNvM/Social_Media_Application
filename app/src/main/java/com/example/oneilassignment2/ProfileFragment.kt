@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
@@ -22,7 +23,9 @@ import java.util.Calendar
 
 class ProfileFragment : Fragment() {
 
-    @SuppressLint("SetTextI18n", "NotifyDataSetChanged", "SimpleDateFormat")
+    @SuppressLint("SetTextI18n", "NotifyDataSetChanged", "SimpleDateFormat",
+        "ClickableViewAccessibility"
+    )
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -37,6 +40,13 @@ class ProfileFragment : Fragment() {
         val userSession = mainActivity.getSharedPreferences("USER_SESSION", MODE_PRIVATE)
         val userId = userSession.getInt("student_id", 0)
         val userName = userSession.getString("first_name", "")
+
+        val chatButton = mainActivity.findViewById<ImageButton>(R.id.home_chat_button)
+        val settingsButton = mainActivity.findViewById<ImageButton>(R.id.home_settings_button)
+        val homeButton = mainActivity.findViewById<ImageButton>(R.id.h_home_button)
+        val postButton = mainActivity.findViewById<ImageButton>(R.id.home_add_button)
+        val profileButton = mainActivity.findViewById<ImageButton>(R.id.home_profile_button)
+        val logoutButton = mainActivity.findViewById<ImageButton>(R.id.home_logout_button)
 
 //        Grab the first name of the student from the shared preference
         val studentName = view.findViewById<TextView>(R.id.profile_student_first_name)
@@ -53,6 +63,7 @@ class ProfileFragment : Fragment() {
         val profileEditDateOfBirthText = view.findViewById<TextView>(R.id.profile_edit_dob_text)
         val profileHomeButton = view.findViewById<Button>(R.id.profile_home_button)
         val profileLikesButton = view.findViewById<Button>(R.id.profile_likes_button)
+        val profileFragment = view.findViewById<FrameLayout>(R.id.profile_fragment_container)
 
         parentFragmentManager.beginTransaction()
             .add(R.id.profile_fragment_container, ProfilePostsFragment())
@@ -69,10 +80,30 @@ class ProfileFragment : Fragment() {
 
         profileEditButton.setOnClickListener {
             profileEditCard.visibility = View.VISIBLE
+
+            chatButton.isClickable = false
+            settingsButton.isClickable = false
+            homeButton.isClickable = false
+            postButton.isClickable = false
+            profileButton.isClickable = false
+            logoutButton.isClickable = false
+            profileLikesButton.isClickable = false
+            profileHomeButton.isClickable = false
+            profileFragment.visibility = View.INVISIBLE
         }
 
         profileEditBackButton.setOnClickListener {
             profileEditCard.visibility = View.GONE
+
+            chatButton.isClickable = true
+            settingsButton.isClickable = true
+            homeButton.isClickable = true
+            postButton.isClickable = true
+            profileButton.isClickable = true
+            logoutButton.isClickable = true
+            profileLikesButton.isClickable = true
+            profileHomeButton.isClickable = true
+            profileFragment.visibility = View.VISIBLE
         }
 
         //        Create date picker dialog when date of birth button is clicked

@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity() {
         val postButton = findViewById<ImageButton>(R.id.home_add_button)
         val profileButton = findViewById<ImageButton>(R.id.home_profile_button)
         val settingsButton = findViewById<ImageButton>(R.id.home_settings_button)
+        val chatButton = findViewById<ImageButton>(R.id.home_chat_button)
         val homeTitle = findViewById<TextView>(R.id.home_text_view)
         val mainBackgroundImage = findViewById<ImageView>(R.id.main_background_image)
 
@@ -326,6 +327,13 @@ and restores the main activity views
 //        Opens the settings fragment
         settingsButton.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+
+            finish()
+        }
+
+        chatButton.setOnClickListener {
+            val intent = Intent(this, ChatActivity::class.java)
             startActivity(intent)
 
             finish()

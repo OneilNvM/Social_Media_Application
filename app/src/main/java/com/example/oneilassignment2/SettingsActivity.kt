@@ -115,6 +115,11 @@ class SettingsActivity : AppCompatActivity() {
 
         resetPasswordButton.setOnClickListener {
             resetPasswordCard.visibility = View.VISIBLE
+
+            resetPasswordButton.isClickable = false
+            deleteAccountButton.isClickable = false
+            darkModeSwitch.isClickable = false
+            closeButton.isClickable = false
         }
 
         //        Confirms the password reset
@@ -183,10 +188,20 @@ class SettingsActivity : AppCompatActivity() {
 
         cancelReset.setOnClickListener {
             resetPasswordCard.visibility = View.GONE
+
+            resetPasswordButton.isClickable = true
+            deleteAccountButton.isClickable = true
+            darkModeSwitch.isClickable = true
+            closeButton.isClickable = true
         }
 
         deleteAccountButton.setOnClickListener {
             deleteAccountCard.visibility = View.VISIBLE
+
+            resetPasswordButton.isClickable = false
+            deleteAccountButton.isClickable = false
+            darkModeSwitch.isClickable = false
+            closeButton.isClickable = false
         }
 
         //        Confirms the deletion of an account
@@ -487,6 +502,11 @@ class SettingsActivity : AppCompatActivity() {
 
         cancelDelete.setOnClickListener {
             deleteAccountCard.visibility = View.GONE
+
+            resetPasswordButton.isClickable = true
+            deleteAccountButton.isClickable = true
+            darkModeSwitch.isClickable = true
+            closeButton.isClickable = true
         }
 
         closeButton.setOnClickListener {
