@@ -15,6 +15,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 
 class DeleteStudentFragment : Fragment() {
+
+    private lateinit var db: SchoolSQLiteDatabase
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -27,7 +30,7 @@ class DeleteStudentFragment : Fragment() {
 
 //        Sets variables for the main activity, database and other views
         val mainActivity = requireActivity() as MainActivity
-        val db = SchoolSQLiteDatabase(mainActivity)
+        db = SchoolSQLiteDatabase(mainActivity)
 
         val studentIdInput = view.findViewById<EditText>(R.id.admin_delete_student_id)
         val deleteButton = view.findViewById<Button>(R.id.admin_delete_student_delete_button)
@@ -321,8 +324,6 @@ class DeleteStudentFragment : Fragment() {
 
                 Toast.makeText(mainActivity, "Account Deleted", Toast.LENGTH_SHORT).show()
 
-                db.close()
-
                 parentFragmentManager.popBackStack()
 
             } catch (e: Exception) {
@@ -337,10 +338,14 @@ class DeleteStudentFragment : Fragment() {
 
         backButton.setOnClickListener {
             parentFragmentManager.popBackStack()
-
-            db.close()
         }
         return view
+    }
+
+    override fun onDestroyView() {
+        db.close()
+
+        super.onDestroyView()
     }
 
 

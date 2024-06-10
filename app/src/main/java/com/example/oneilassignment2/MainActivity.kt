@@ -348,6 +348,7 @@ and restores the main activity views
         val postButton = findViewById<ImageButton>(R.id.home_add_button)
         val profileButton = findViewById<ImageButton>(R.id.home_profile_button)
         val settingsButton = findViewById<ImageButton>(R.id.home_settings_button)
+        val chatButton = findViewById<ImageButton>(R.id.home_chat_button)
 
         if (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_NO) {
             Log.d(TAG, "Day Mode")
@@ -356,6 +357,7 @@ and restores the main activity views
             profileButton.setBackgroundResource(R.drawable.user)
             logoutButton.setBackgroundResource(R.drawable.exit)
             settingsButton.setBackgroundResource(R.drawable.setting)
+            chatButton.setBackgroundResource(R.drawable.chat)
         } else {
             Log.d(TAG, "Night Mode")
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
@@ -363,6 +365,7 @@ and restores the main activity views
             profileButton.setBackgroundResource(R.drawable.user__1_)
             logoutButton.setBackgroundResource(R.drawable.exit__1_)
             settingsButton.setBackgroundResource(R.drawable.setting__1_)
+            chatButton.setBackgroundResource(R.drawable.chat_1)
         }
     }
 }

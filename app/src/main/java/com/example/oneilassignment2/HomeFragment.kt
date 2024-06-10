@@ -21,6 +21,7 @@ class HomeFragment : Fragment(), HomePostsRecyclerViewInterface {
     private lateinit var listOfPosts: ArrayList<PostData>
     private lateinit var rcvAdapter: HomePostsRecyclerViewAdapter
     private lateinit var sharedViewModel: PostDataViewModel
+    private lateinit var db: SchoolSQLiteDatabase
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreateView(
@@ -29,6 +30,8 @@ class HomeFragment : Fragment(), HomePostsRecyclerViewInterface {
     ): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_home, container, false)
+
+        db = SchoolSQLiteDatabase(requireActivity())
 
 //        Set variables for main activity and other views
         val mainActivity = requireActivity() as MainActivity
@@ -63,7 +66,6 @@ class HomeFragment : Fragment(), HomePostsRecyclerViewInterface {
 
 //    Function to add the posts to the list for the RecyclerView to display
     private fun addPostsToList() {
-        val db = SchoolSQLiteDatabase(requireActivity())
         val userSession = requireActivity().getSharedPreferences("USER_SESSION", MODE_PRIVATE)
         val userId = userSession.getInt("student_id", 0)
         val cursor: Cursor? = db.retrieveAllPosts()
@@ -113,7 +115,6 @@ class HomeFragment : Fragment(), HomePostsRecyclerViewInterface {
             Log.e(TAG, "Error: Posts could not be added to list")
         }
         cursor?.close()
-        db.close()
     }
 
 /*    This function is called when the like button is pressed and updates the database and
@@ -123,8 +124,7 @@ RecyclerView based on whether the user has like the post or not
         val mainActivity = requireActivity() as MainActivity
         val userSession = mainActivity.getSharedPreferences("USER_SESSION", MODE_PRIVATE)
         val userId = userSession.getInt("student_id", 0)
-        val db = SchoolSQLiteDatabase(requireActivity())
-        val dbWrite = SchoolSQLiteDatabase(requireActivity()).writableDatabase
+        val dbWrite = db.writableDatabase
         var cursor: Cursor?
 
         val query = "SELECT * FROM posts WHERE student_id = ? AND post_id = ?"
@@ -282,8 +282,6 @@ RecyclerView based on whether the user has like the post or not
         }
         cursor?.close()
         dbWrite.close()
-
-        db.close()
     }
 
     override fun onCommentButtonClicked(post: PostData, position: Int) {
@@ -294,6 +292,10 @@ RecyclerView based on whether the user has like the post or not
             .add(R.id.comments_fragment_container, CommentsFragment())
             .addToBackStack(null)
             .commit()
+    }
 
+    override fun onDestroyView() {
+        db.close()
+        super.onDestroyView()
     }
 }

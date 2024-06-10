@@ -18,6 +18,8 @@ import java.util.Calendar
 
 class UpdateInfoFragment : Fragment() {
 
+    private lateinit var db: SchoolSQLiteDatabase
+
     @SuppressLint("SimpleDateFormat", "SetTextI18n", "ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,7 +31,7 @@ class UpdateInfoFragment : Fragment() {
         view.setOnTouchListener { _, _ ->  return@setOnTouchListener true}
 //        Set variables for main activity, database and other views
         val mainActivity = requireActivity() as MainActivity
-        val db = SchoolSQLiteDatabase(mainActivity)
+        db = SchoolSQLiteDatabase(mainActivity)
 
         val studentIdInput = view.findViewById<EditText>(R.id.admin_update_info_id_input)
         val firstNameInput = view.findViewById<EditText>(R.id.admin_update_info_firstname_input)
@@ -137,7 +139,6 @@ class UpdateInfoFragment : Fragment() {
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    db.close()
                 } catch (e: Exception) {
                     Toast.makeText(mainActivity, "Failed to update student info", Toast.LENGTH_SHORT)
                         .show()
@@ -147,11 +148,14 @@ class UpdateInfoFragment : Fragment() {
 
         backButton.setOnClickListener {
             parentFragmentManager.popBackStack()
-
-            db.close()
         }
 
         return view
+    }
+
+    override fun onDestroyView() {
+        db.close()
+        super.onDestroyView()
     }
 
 }

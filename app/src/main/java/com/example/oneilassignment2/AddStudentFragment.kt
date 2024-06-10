@@ -17,6 +17,8 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 class AddStudentFragment : Fragment() {
+
+    private lateinit var db: SchoolSQLiteDatabase
     @SuppressLint("SimpleDateFormat", "SetTextI18n", "ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,7 +32,7 @@ class AddStudentFragment : Fragment() {
 
 //        Set variables for views, database and main activity
         val mainActivity = requireActivity() as MainActivity
-        val db = SchoolSQLiteDatabase(mainActivity)
+        db = SchoolSQLiteDatabase(mainActivity)
 
         val firstNameInput = view.findViewById<EditText>(R.id.admin_add_student_firstname_input)
         val surnameInput = view.findViewById<EditText>(R.id.admin_add_student_surname_input)
@@ -116,10 +118,7 @@ class AddStudentFragment : Fragment() {
 
                         parentFragmentManager.popBackStack()
 
-                        Toast.makeText(context, "Student added successfully", Toast.LENGTH_SHORT)
-                            .show()
-
-                        db.close()
+                        Toast.makeText(context, "Student added successfully", Toast.LENGTH_SHORT).show()
 
                         firstNameInput.text.clear()
                         surnameInput.text.clear()
@@ -139,11 +138,14 @@ class AddStudentFragment : Fragment() {
 
         backButton.setOnClickListener {
             parentFragmentManager.popBackStack()
-
-            db.close()
         }
 
         return view
+    }
+
+    override fun onDestroyView() {
+        db.close()
+        super.onDestroyView()
     }
 
 }

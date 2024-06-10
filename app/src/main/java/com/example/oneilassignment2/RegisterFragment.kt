@@ -20,6 +20,7 @@ import java.util.Calendar
 
 class RegisterFragment : Fragment() {
 
+    private lateinit var db: SchoolSQLiteDatabase
     @SuppressLint("SetTextI18n", "SimpleDateFormat")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,7 +31,7 @@ class RegisterFragment : Fragment() {
 //        Set variables for main activity, database, and other views
         val mainActivity = requireActivity() as MainActivity
 
-        val db = SchoolSQLiteDatabase(mainActivity)
+        db = SchoolSQLiteDatabase(mainActivity)
 
         val firstNameInput = view.findViewById<EditText>(R.id.register_firstname_input)
         val surnameInput = view.findViewById<EditText>(R.id.register_surname_input)
@@ -172,7 +173,11 @@ class RegisterFragment : Fragment() {
                 .popBackStack()
         }
 
-        db.close()
         return view
+    }
+
+    override fun onDestroyView() {
+        db.close()
+        super.onDestroyView()
     }
 }

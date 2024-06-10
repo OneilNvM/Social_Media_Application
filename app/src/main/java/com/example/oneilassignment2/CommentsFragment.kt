@@ -23,6 +23,7 @@ import java.util.Calendar
 class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
 
 //    Create lateinit variables for the RecyclerView Adapter and the ArrayList of Comments
+    private lateinit var db: SchoolSQLiteDatabase
     private lateinit var rcvAdapter: CommentsRecyclerViewAdapter
     private lateinit var arrayOfComments: ArrayList<CommentData>
 //    Retrieve the post ViewModel
@@ -43,7 +44,7 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
 
 //        Set variables for main activity, database and other views
         val mainActivity = requireActivity() as MainActivity
-        val db = SchoolSQLiteDatabase(mainActivity)
+        db = SchoolSQLiteDatabase(mainActivity)
         val userSession = mainActivity.getSharedPreferences("USER_SESSION", MODE_PRIVATE)
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.comments_recycler_view)
@@ -152,14 +153,11 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
             }
         }
 
-        db.close()
-
         return view
     }
 
 //    Function retrieves all the comments for the post and adds the comments to the list
     private fun addCommentsToList(postId: Int) {
-        val db = SchoolSQLiteDatabase(requireActivity())
         val cursor = db.retrieveCommentsOrderedByCommentId(postId)
         val userSession = requireActivity().getSharedPreferences("USER_SESSION", MODE_PRIVATE)
         val userId = userSession.getInt("student_id", 0)
@@ -219,12 +217,10 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
             Toast.makeText(requireActivity(), "Error trying to retrieve comments", Toast.LENGTH_SHORT).show()
         }
         cursor?.close()
-        db.close()
     }
 
 //    Interface function which checks if the comment has been liked and updates the RecyclerView with the new data
     override fun onLikeButtonClicked(comment: CommentData, position: Int) {
-        val db = SchoolSQLiteDatabase(requireActivity())
         val userSession = requireActivity().getSharedPreferences("USER_SESSION", MODE_PRIVATE)
         val studentId = userSession.getInt("student_id", 0)
         val commentId = comment.commentId
@@ -310,12 +306,10 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
             Toast.makeText(requireActivity(), "Error trying to like comment", Toast.LENGTH_SHORT).show()
         }
         cursor?.close()
-        db.close()
     }
 
 //    Interface function which checks if the comment has been disliked and updates the RecyclerView with the new data
     override fun onDislikeButtonClicked(comment: CommentData, position: Int) {
-        val db = SchoolSQLiteDatabase(requireActivity())
         val userSession = requireActivity().getSharedPreferences("USER_SESSION", MODE_PRIVATE)
         val studentId = userSession.getInt("student_id", 0)
         val commentId = comment.commentId
@@ -402,6 +396,11 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
             Toast.makeText(requireActivity(), "Error trying to dislike comment", Toast.LENGTH_SHORT).show()
         }
         cursor?.close()
+    }
+
+    override fun onDestroyView() {
         db.close()
+
+        super.onDestroyView()
     }
 }

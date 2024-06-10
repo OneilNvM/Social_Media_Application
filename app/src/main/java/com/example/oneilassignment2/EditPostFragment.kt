@@ -22,6 +22,7 @@ class EditPostFragment : Fragment() {
 
 //    Get the ViewModel for PostData
     private val sharedViewModel: PostDataViewModel by activityViewModels()
+    private lateinit var db: SchoolSQLiteDatabase
 
     @SuppressLint("SimpleDateFormat", "ClickableViewAccessibility")
     override fun onCreateView(
@@ -36,7 +37,7 @@ class EditPostFragment : Fragment() {
 
 //        Set variables for main activity, database and other views
         val mainActivity = requireActivity() as MainActivity
-        val db = SchoolSQLiteDatabase(mainActivity)
+        db = SchoolSQLiteDatabase(mainActivity)
 
 //        Retrieve data from ViewModel
         val postData = sharedViewModel
@@ -91,8 +92,11 @@ class EditPostFragment : Fragment() {
             editPostCaption.setText("")
         }
 
-        db.close()
-
         return view
+    }
+
+    override fun onDestroyView() {
+        db.close()
+        super.onDestroyView()
     }
 }

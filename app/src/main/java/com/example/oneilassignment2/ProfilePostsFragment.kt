@@ -21,6 +21,8 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
     private lateinit var sharedViewModel: PostDataViewModel
     private lateinit var listOfPosts: ArrayList<PostData>
     private lateinit var rcvAdapter: ProfileRecyclerViewAdapter
+    private lateinit var db: SchoolSQLiteDatabase
+
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,6 +32,8 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
         val view = inflater.inflate(R.layout.fragment_profile_posts, container, false)
         val mainActivity = requireActivity() as MainActivity
         sharedViewModel = ViewModelProvider(mainActivity)[PostDataViewModel::class.java]
+
+        db = SchoolSQLiteDatabase(mainActivity)
 
         val swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.profile_posts_swipe_refresh)
         val recyclerView = view.findViewById<RecyclerView>(R.id.profile_posts_recycler_view)
@@ -75,7 +79,6 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
     }
 
     private fun addPostsToList() {
-        val db = SchoolSQLiteDatabase(requireActivity())
         val userSession = requireActivity().getSharedPreferences("USER_SESSION",
             Context.MODE_PRIVATE
         )
@@ -127,7 +130,6 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
             Log.e(ContentValues.TAG, "Error trying to add posts to list: ${e.message}")
         }
         cursor?.close()
-        db.close()
     }
 
     //    Interface function handles click events on the like button on the posts
@@ -135,8 +137,7 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
         val mainActivity = requireActivity() as MainActivity
         val userSession = mainActivity.getSharedPreferences("USER_SESSION", Context.MODE_PRIVATE)
         val userId = userSession.getInt("student_id", 0)
-        val db = SchoolSQLiteDatabase(requireActivity())
-        val dbWrite = SchoolSQLiteDatabase(requireActivity()).writableDatabase
+        val dbWrite = db.writableDatabase
         var cursor: Cursor?
 
         val query = "SELECT * FROM posts WHERE student_id = ? AND post_id = ?"
@@ -294,8 +295,6 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
         }
         cursor?.close()
         dbWrite.close()
-
-        db.close()
     }
 
     //    Interface function handles click events on the comment button on the posts
@@ -316,5 +315,10 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
             .add(R.id.full_frame_fragment_container, EditPostFragment())
             .addToBackStack(null)
             .commit()
+    }
+
+    override fun onDestroyView() {
+        db.close()
+        super.onDestroyView()
     }
 }

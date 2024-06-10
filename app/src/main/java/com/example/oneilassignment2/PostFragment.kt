@@ -32,6 +32,7 @@ class PostFragment : Fragment(), HomePostsRecyclerViewInterface{
 
 //    Create a lateinit variable to store the list of posts
     private lateinit var listOfPosts: ArrayList<PostData>
+    private lateinit var db: SchoolSQLiteDatabase
 
     @SuppressLint("SimpleDateFormat")
     override fun onCreateView(
@@ -44,7 +45,7 @@ class PostFragment : Fragment(), HomePostsRecyclerViewInterface{
 //        Set variables for main activity, database, and other views
         val mainActivity = requireActivity() as MainActivity
         val homeFragment = inflater.inflate(R.layout.fragment_home, container, false)
-        val db = SchoolSQLiteDatabase(mainActivity)
+        db = SchoolSQLiteDatabase(mainActivity)
 
         listOfPosts = ArrayList()
 
@@ -102,14 +103,11 @@ class PostFragment : Fragment(), HomePostsRecyclerViewInterface{
             }
         }
 
-        db.close()
-
         return view
     }
 
 //    Function to add post to the list
     private fun addPostsToList() {
-        val db = SchoolSQLiteDatabase(requireActivity())
         val cursor: Cursor? = db.retrieveAllPosts()
 
         try {
@@ -191,5 +189,10 @@ class PostFragment : Fragment(), HomePostsRecyclerViewInterface{
 
     override fun onCommentButtonClicked(post: PostData, position: Int) {
 //        No implementation needed
+    }
+
+    override fun onDestroyView() {
+        db.close()
+        super.onDestroyView()
     }
 }

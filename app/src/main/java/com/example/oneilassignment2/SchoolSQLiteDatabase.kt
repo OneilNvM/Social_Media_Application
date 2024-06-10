@@ -6,7 +6,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_DB", null, 20) {
+class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_DB", null, 23) {
     private val studentsTable = "students"
     private val studentsID = "student_id"
     private val studentsFirstName = "first_name"
@@ -52,6 +52,18 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
     private val dislikesStudentIDRef = "student_id"
     private val dislikesCommentsIDRef = "comment_id"
 
+    private val chatsTable = "chats"
+    private val chatId = "chat_id"
+    private val dateCreatedChats = "date_created"
+    private val chatsStudentIDRef1 = "student_id1"
+    private val chatsStudentIDRef2 = "student_id2"
+
+    private val messagesTable = "messages"
+    private val messageId = "message_id"
+    private val messageText = "text"
+    private val messageDate = "date"
+    private val messagesChatIDRef = "chat_id"
+    private val messagesStudentIDRef = "student_id"
 
     override fun onCreate(db: SQLiteDatabase?) {
         val createStudentsTable = "CREATE TABLE IF NOT EXISTS $studentsTable ($studentsID INTEGER PRIMARY KEY AUTOINCREMENT, $studentsFirstName TEXT, $studentsSurname TEXT, $studentsEmail TEXT, $studentsDOB TEXT, $studentsPassword TEXT, $dateCreated TEXT, $dateUpdated TEXT)"
@@ -60,12 +72,16 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
         val createCommentsTable = "CREATE TABLE IF NOT EXISTS $commentsTable ($commentsId INTEGER PRIMARY KEY AUTOINCREMENT, $commenterName TEXT, $commentsText TEXT, $commentsDate TEXT, $numOfLikesOnComment INTEGER DEFAULT 0, $numOfDislikesOnComment INTEGER DEFAULT 0, $commentsStudentIDRef INTEGER, $commentsPostIDRef INTEGER)"
         val createLikesTable = "CREATE TABLE IF NOT EXISTS $likesTable ($likesId INTEGER PRIMARY KEY AUTOINCREMENT, $likesStudentIDRef INTEGER, $likesPostIDRef INTEGER, $likesCommentIDRef INTEGER)"
         val createDislikesTable = "CREATE TABLE IF NOT EXISTS $dislikesTable ($dislikesId INTEGER PRIMARY KEY AUTOINCREMENT, $dislikesStudentIDRef INTEGER, $dislikesCommentsIDRef INTEGER)"
+        val createChatsTable = "CREATE TABLE IF NOT EXISTS $chatsTable ($chatId INTEGER PRIMARY KEY AUTOINCREMENT, $dateCreatedChats TEXT, $chatsStudentIDRef1 INTEGER, $chatsStudentIDRef2 INTEGER)"
+        val createMessagesTable = "CREATE TABLE IF NOT EXISTS $messagesTable ($messageId INTEGER PRIMARY KEY AUTOINCREMENT, $messageText TEXT, $messageDate TEXT, $messagesChatIDRef INTEGER, $messagesStudentIDRef INTEGER)"
         db?.execSQL(createStudentsTable)
         db?.execSQL(createAdminsTable)
         db?.execSQL(createPostsTable)
         db?.execSQL(createCommentsTable)
         db?.execSQL(createLikesTable)
         db?.execSQL(createDislikesTable)
+        db?.execSQL(createChatsTable)
+        db?.execSQL(createMessagesTable)
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
@@ -75,6 +91,8 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
         val dropCommentsTable = "DROP TABLE IF EXISTS $commentsTable"
         val dropLikesTable = "DROP TABLE IF EXISTS $likesTable"
         val dropDislikesTable = "DROP TABLE IF EXISTS $dislikesTable"
+        val dropChatsTable = "DROP TABLE IF EXISTS $chatsTable"
+        val dropMessagesTable = "DROP TABLE IF EXISTS $messagesTable"
         val values = ContentValues()
         values.put(adminsEmail, "admin@school.co.uk")
         values.put(adminsPassword, "admin")
@@ -86,6 +104,8 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
             db?.execSQL(dropCommentsTable)
             db?.execSQL(dropLikesTable)
             db?.execSQL(dropDislikesTable)
+            db?.execSQL(dropChatsTable)
+            db?.execSQL(dropMessagesTable)
             onCreate(db)
             db?.insert(adminsTable, null, values)
         }
@@ -95,6 +115,11 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
     fun retrieveStudent(studentId: Int) : Cursor? {
         val db = readableDatabase
         return db.rawQuery("SELECT * FROM $studentsTable WHERE $studentsID = $studentId", null)
+    }
+
+    fun searchStudents(sq: String) : Cursor? {
+        val db = readableDatabase
+        return db.rawQuery("SELECT * FROM $studentsTable WHERE $studentsFirstName LIKE '%$sq%'", null)
     }
 
     fun insertStudent(firstName: String, surname: String, email: String, dob: String, password: String, dateOfCreation: String) {
@@ -110,7 +135,6 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
             values.put(dateCreated, dateOfCreation)
 
             db.insert(studentsTable, null, values)
-            db.close()
         }
     }
 
@@ -135,13 +159,11 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
         values.put(dateUpdated, dateOfUpdate)
 
         db.update(studentsTable, values, "$studentsID = ?", arrayOf(id.toString()))
-        db.close()
     }
 
     fun deleteStudent(id: Int) {
         val db = writableDatabase
         db.delete(studentsTable, "$studentsID = ?", arrayOf(id.toString()))
-        db.close()
     }
 
 //    Posts Methods
@@ -156,7 +178,6 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
             values.put(postsStudentIDRef, studentID)
 
             db.insert(postsTable, null, values)
-            db.close()
         }
     }
 
@@ -180,7 +201,6 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
             values.put(postsStudentIDRef, studentID)
         }
         db.update(postsTable, values, "$postsId = ?", arrayOf(id.toString()))
-        db.close()
     }
 
     fun updateStudentPosts(studentId: Int, firstName: String?, caption: String?) {
@@ -193,7 +213,6 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
             values.put(postCaption, caption)
         }
         db.update(postsTable, values, "$postsStudentIDRef = ?", arrayOf(studentId.toString()))
-        db.close()
     }
 
     fun retrievePost(id: Int): Cursor? {
@@ -214,7 +233,6 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
     fun deleteStudentPosts(studentID: Int) {
         val db = writableDatabase
         db.delete(postsTable, "$postsStudentIDRef = ?", arrayOf(studentID.toString()))
-        db.close()
     }
 
 //    Likes Methods
@@ -262,7 +280,6 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
         values.put(likesCommentIDRef, commentID)
 
         db.insert(likesTable, null, values)
-        db.close()
     }
 
     fun insertPostLike(studentID: Int, postID: Int) {
@@ -271,25 +288,21 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
         values.put(likesStudentIDRef, studentID)
         values.put(likesPostIDRef, postID)
         db.insert(likesTable, null, values)
-        db.close()
     }
 
     fun deletePostLike(studentID: Int, postID: Int) {
         val db = writableDatabase
         db.delete(likesTable, "$likesStudentIDRef = ? AND $likesPostIDRef = ?", arrayOf(studentID.toString(), postID.toString()))
-        db.close()
     }
 
     fun deleteLike(likeId: Int) {
         val db = writableDatabase
         db.delete(likesTable, "$likesId = ?", arrayOf(likeId.toString()))
-        db.close()
     }
 
     fun deleteStudentLikes(studentID: Int) {
         val db = writableDatabase
         db.delete(likesTable, "$likesStudentIDRef = ?", arrayOf(studentID.toString()))
-        db.close()
     }
 
 //    Dislike Methods
@@ -319,19 +332,16 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
         values.put(dislikesCommentsIDRef, commentID)
 
         db.insert(dislikesTable, null, values)
-        db.close()
     }
 
     fun deleteDislike(dislikeId: Int) {
         val db = writableDatabase
         db.delete(dislikesTable, "$dislikesId = ?", arrayOf(dislikeId.toString()))
-        db.close()
     }
 
     fun deleteStudentDislikes(studentID: Int) {
         val db = writableDatabase
         db.delete(dislikesTable, "$dislikesStudentIDRef = ?", arrayOf(studentID.toString()))
-        db.close()
     }
 
 //    Comments Methods
@@ -366,7 +376,6 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
         values.put(commentsPostIDRef, postID)
 
         db.insert(commentsTable, null, values)
-        db.close()
     }
 
     fun updateComment(id: Int, text: String?, date: String?, likes: Int?, dislikes: Int?) {
@@ -386,7 +395,6 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
             values.put(numOfDislikesOnComment, dislikes)
         }
         db.update(commentsTable, values, "$commentsId = ?", arrayOf(id.toString()))
-        db.close()
     }
 
     fun updateStudentComments(studentId: Int, firstName: String?, text: String?) {
@@ -399,13 +407,91 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
             values.put(commentsText, text)
         }
         db.update(commentsTable, values, "$commentsStudentIDRef = ?", arrayOf(studentId.toString()))
-        db.close()
     }
 
     fun deleteStudentComments(studentID: Int) {
         val db = writableDatabase
         db.delete(commentsTable, "$commentsStudentIDRef = ?", arrayOf(studentID.toString()))
-        db.close()
     }
 
+//    Chats Methods
+
+    fun insertChat(date: String, studentID1: Int, studentID2: Int) {
+        val db = writableDatabase
+        val values = ContentValues()
+        values.put(dateCreatedChats, date)
+        values.put(chatsStudentIDRef1, studentID1)
+        values.put(chatsStudentIDRef2, studentID2)
+
+        db.insert(chatsTable, null, values)
+    }
+
+    fun deleteChat(id: Int) {
+        val db = writableDatabase
+        db.delete(chatsTable, "$chatId = ?", arrayOf(id.toString()))
+    }
+
+    fun retrieveChat(chatId: Int): Cursor? {
+        val db = readableDatabase
+        return db.rawQuery("SELECT * FROM $chatsTable WHERE $chatId = $chatId", null)
+    }
+
+    fun retrieveSpecificChat(studentID1: Int, studentID2: Int): Cursor? {
+        val db = readableDatabase
+        return db.rawQuery("SELECT * FROM $chatsTable WHERE $chatsStudentIDRef1 = $studentID1 AND $chatsStudentIDRef2 = $studentID2 OR $chatsStudentIDRef1 = $studentID2 AND $chatsStudentIDRef2 = $studentID1", null)
+    }
+
+    fun retrieveMultipleChats(studentID: Int): Cursor? {
+        val db = readableDatabase
+        return db.rawQuery("SELECT * FROM $chatsTable WHERE $chatsStudentIDRef1 = $studentID OR $chatsStudentIDRef2 = $studentID", null)
+    }
+
+    fun retrieveAllChats(): Cursor? {
+        val db = readableDatabase
+        return db.rawQuery("SELECT * FROM $chatsTable", null)
+
+    }
+
+//    Messages Methods
+
+    fun insertMessage(text: String, date: String, chatID: Int, studentID: Int) {
+        val db = writableDatabase
+        val values = ContentValues()
+        values.put(messageText, text)
+        values.put(messageDate, date)
+        values.put(messagesChatIDRef, chatID)
+        values.put(messagesStudentIDRef, studentID)
+
+        db.insert(messagesTable, null, values)
+    }
+
+    fun deleteMessage(messageId: Int) {
+        val db = writableDatabase
+        db.delete(messagesTable, "$messageId = ?", arrayOf(messageId.toString()))
+    }
+
+    fun deleteChatMessages(chatId: Int) {
+        val db = writableDatabase
+        db.delete(messagesTable, "$messagesChatIDRef = ?", arrayOf(chatId.toString()))
+    }
+
+    fun retrieveMessage(messageId: Int): Cursor? {
+        val db = readableDatabase
+        return db.rawQuery("SELECT * FROM $messagesTable WHERE $messageId = $messageId", null)
+    }
+
+    fun retrieveMessagesByChat(chatId: Int): Cursor? {
+        val db = readableDatabase
+        return db.rawQuery("SELECT * FROM $messagesTable WHERE $messagesChatIDRef = $chatId", null)
+    }
+
+    fun retrieveMessagesByStudent(studentId: Int): Cursor? {
+        val db = readableDatabase
+        return db.rawQuery("SELECT * FROM $messagesTable WHERE $messagesStudentIDRef = $studentId", null)
+    }
+
+    fun retrieveLastMessage(chatId: Int): Cursor? {
+        val db = readableDatabase
+        return db.rawQuery("SELECT * FROM $messagesTable WHERE $messagesChatIDRef = $chatId ORDER BY $messageId DESC LIMIT 1", null)
+    }
 }

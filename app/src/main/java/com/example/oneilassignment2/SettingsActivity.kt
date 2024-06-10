@@ -23,6 +23,7 @@ import java.util.Calendar
 class SettingsActivity : AppCompatActivity() {
 
     private var isDarkMode: Boolean = false
+    private lateinit var db: SchoolSQLiteDatabase
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putBoolean("isDarkMode", isDarkMode)
@@ -43,7 +44,7 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_settings)
 
 //        Set variables for main activity, database, and other views
-        val db = SchoolSQLiteDatabase(this)
+        db = SchoolSQLiteDatabase(this)
 
         val userSession = getSharedPreferences("USER_SESSION", MODE_PRIVATE)
         val userId = userSession.getInt("student_id", 0)
@@ -515,7 +516,10 @@ class SettingsActivity : AppCompatActivity() {
 
             finish()
         }
+    }
 
+    override fun onDestroy() {
         db.close()
+        super.onDestroy()
     }
 }

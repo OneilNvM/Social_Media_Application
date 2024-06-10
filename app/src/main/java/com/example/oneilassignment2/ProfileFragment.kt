@@ -23,6 +23,7 @@ import java.util.Calendar
 
 class ProfileFragment : Fragment() {
 
+    private lateinit var db: SchoolSQLiteDatabase
     @SuppressLint("SetTextI18n", "NotifyDataSetChanged", "SimpleDateFormat",
         "ClickableViewAccessibility"
     )
@@ -35,7 +36,7 @@ class ProfileFragment : Fragment() {
 
 //        Set teh variables for the main activity, database and other views
         val mainActivity = requireActivity() as MainActivity
-        val db = SchoolSQLiteDatabase(mainActivity)
+        db = SchoolSQLiteDatabase(mainActivity)
 
         val userSession = mainActivity.getSharedPreferences("USER_SESSION", MODE_PRIVATE)
         val userId = userSession.getInt("student_id", 0)
@@ -252,7 +253,11 @@ class ProfileFragment : Fragment() {
             }
         }
 
-        db.close()
         return view
+    }
+
+    override fun onDestroyView() {
+        db.close()
+        super.onDestroyView()
     }
 }

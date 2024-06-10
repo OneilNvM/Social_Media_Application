@@ -16,6 +16,8 @@ import java.util.Calendar
 
 class UpdatePasswordFragment : Fragment() {
 
+    private lateinit var db: SchoolSQLiteDatabase
+
     @SuppressLint("SimpleDateFormat", "ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,7 +27,7 @@ class UpdatePasswordFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_update_password, container, false)
         view.setOnTouchListener { _, _ ->  return@setOnTouchListener true}
         val mainActivity = requireActivity() as MainActivity
-        val db = SchoolSQLiteDatabase(mainActivity)
+        db = SchoolSQLiteDatabase(mainActivity)
 
         val studentIdInput = view.findViewById<EditText>(R.id.admin_update_password_id_input)
         val newPasswordInput = view.findViewById<EditText>(R.id.admin_update_password_input)
@@ -59,8 +61,6 @@ class UpdatePasswordFragment : Fragment() {
                         newPassword,
                         formattedDate
                     )
-
-                    db.close()
                 }
                 parentFragmentManager.popBackStack()
                 Toast.makeText(mainActivity, "Password updated successfully", Toast.LENGTH_SHORT)
@@ -72,10 +72,13 @@ class UpdatePasswordFragment : Fragment() {
 
         backButton.setOnClickListener {
             parentFragmentManager.popBackStack()
-
-            db.close()
         }
 
         return view
+    }
+
+    override fun onDestroyView() {
+        db.close()
+        super.onDestroyView()
     }
 }

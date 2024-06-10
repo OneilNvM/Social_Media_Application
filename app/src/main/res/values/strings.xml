@@ -81,5 +81,6 @@
     <string name="chat_messages_text">Chat Messages</string>
     <string name="image_of_add_button_text">Image of add button</string>
     <string name="add_a_new_contact_text">Add a new contact</string>
-    <string name="search_text">Search...</string>
+    <string name="search_text">Search…</string>
+    <string name="remove_contact_text">Remove Contact</string>
 </resources>

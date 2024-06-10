@@ -19,6 +19,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 
 class LoginFragment : Fragment() {
 
+    private lateinit var db: SchoolSQLiteDatabase
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -27,7 +28,7 @@ class LoginFragment : Fragment() {
 
 //        Set variables for main activity, database, and other views
         val mainActivity = requireActivity() as MainActivity
-        val db = SchoolSQLiteDatabase(mainActivity)
+        db = SchoolSQLiteDatabase(mainActivity)
 
         val view = inflater.inflate(R.layout.fragment_login, container, false)
         val backButton = view.findViewById<ImageButton>(R.id.login_back_button)
@@ -147,8 +148,6 @@ class LoginFragment : Fragment() {
             }
         }
 
-        db.close()
-
         backButton.setOnClickListener {
             mainHeader1.visibility = View.VISIBLE
             mainHeader2.visibility = View.VISIBLE
@@ -160,5 +159,9 @@ class LoginFragment : Fragment() {
         return view
     }
 
+    override fun onDestroyView() {
+        db.close()
+        super.onDestroyView()
+    }
 
 }
