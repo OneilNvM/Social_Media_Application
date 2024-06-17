@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 
 class ContactsRecyclerViewAdapter(private val contacts: ArrayList<ChatData>, private val contactsInterface: ContactsRecyclerViewInterface) : RecyclerView.Adapter<ContactsRecyclerViewAdapter.ViewHolder>() {
@@ -14,6 +15,7 @@ class ContactsRecyclerViewAdapter(private val contacts: ArrayList<ChatData>, pri
         val firstName: TextView = view.findViewById(R.id.contact_item_name)
         val removeButton: ImageButton = view.findViewById(R.id.contact_item_button)
         val previewMessage: TextView = view.findViewById(R.id.contact_item_recent_message)
+        val contactCard: CardView = view.findViewById(R.id.contact_item_card)
     }
 
     override fun onCreateViewHolder(
@@ -27,7 +29,7 @@ class ContactsRecyclerViewAdapter(private val contacts: ArrayList<ChatData>, pri
     @SuppressLint("NotifyDataSetChanged")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.firstName.text = contacts[position].firstName
-        holder.previewMessage.text = contacts[position].message
+        holder.previewMessage.text = if (contacts[position].message == null) "Say hi to ${contacts[position].firstName}" else contacts[position].message
 
         //        Handle UI changes with dark mode
         if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_NO) {
@@ -38,6 +40,10 @@ class ContactsRecyclerViewAdapter(private val contacts: ArrayList<ChatData>, pri
 
         holder.removeButton.setOnClickListener {
             contactsInterface.onRemoveButtonClicked(contacts[position], position)
+        }
+
+        holder.contactCard.setOnClickListener {
+            contactsInterface.onContactClicked(contacts[position], position)
         }
     }
 

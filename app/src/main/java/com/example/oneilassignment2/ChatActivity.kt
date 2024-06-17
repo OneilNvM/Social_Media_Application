@@ -14,6 +14,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.text.SimpleDateFormat
@@ -26,11 +28,20 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
     private lateinit var contacts: ArrayList<ChatData>
     private lateinit var searchAdapter: SearchContactRecyclerViewAdapter
     private lateinit var contactsAdapter: ContactsRecyclerViewAdapter
+    private lateinit var chatDataViewModel: ChatDataViewModel
+
+    private lateinit var chatTopConstraint: ConstraintLayout
+    private lateinit var chatDivider1: View
+    private lateinit var chatDivider2: View
+    private lateinit var contactsRecyclerView: RecyclerView
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_chat)
+
+        chatDataViewModel = ViewModelProvider(this)[ChatDataViewModel::class.java]
 
         db = SchoolSQLiteDatabase(this)
 
@@ -39,8 +50,12 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
         val addContactCard = findViewById<CardView>(R.id.chat_add_contact_card)
         val searchBar = findViewById<EditText>(R.id.chat_search_box)
         val addContactBackButton = findViewById<ImageButton>(R.id.chat_add_contact_back_button)
-        val contactsRecyclerView = findViewById<RecyclerView>(R.id.chat_contacts_recycler_view)
         val addContactRecyclerView = findViewById<RecyclerView>(R.id.chat_add_contact_recycler_view)
+
+        chatTopConstraint = findViewById(R.id.chat_top_constraint)
+        chatDivider1 = findViewById(R.id.chat_divider_1)
+        chatDivider2 = findViewById(R.id.chat_divider_2)
+        contactsRecyclerView = findViewById(R.id.chat_contacts_recycler_view)
 
         val searchQuery = searchBar.text.toString()
 
@@ -382,6 +397,20 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
 
         contacts.removeAt(position)
         contactsAdapter.notifyDataSetChanged()
+    }
+
+    override fun onContactClicked(contact: ChatData, position: Int) {
+        chatDataViewModel.chatData = contact
+
+        chatTopConstraint.visibility = View.GONE
+        chatDivider1.visibility = View.GONE
+        chatDivider2.visibility = View.GONE
+        contactsRecyclerView.visibility = View.GONE
+
+        supportFragmentManager.beginTransaction()
+            .add(R.id.chat_contact_fragment_container, DirectMessageFragment())
+            .addToBackStack("Chat")
+            .commit()
     }
 
     override fun onStart() {

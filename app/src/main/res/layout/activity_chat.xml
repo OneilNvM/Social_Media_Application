@@ -8,7 +8,7 @@
     tools:context=".ChatActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout"
+        android:id="@+id/chat_top_constraint"
         android:layout_width="411dp"
         android:layout_height="160dp"
         android:layout_marginTop="38dp"
@@ -71,20 +71,20 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view2" />
+        app:layout_constraintTop_toBottomOf="@+id/chat_divider_1" />
 
     <View
-        android:id="@+id/view2"
+        android:id="@+id/chat_divider_1"
         style="@style/DIVIDER"
         android:layout_width="0dp"
         android:layout_height="1dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/chat_top_constraint" />
 
     <View
-        android:id="@+id/view3"
+        android:id="@+id/chat_divider_2"
         style="@style/DIVIDER"
         android:layout_width="0dp"
         android:layout_height="1dp"
