@@ -12,6 +12,18 @@
         <item name="android:windowBackground">@color/babyBlue</item>
     </style>
 
+    <style name="MAIN_BACKGROUND">
+        <item name="android:background">@color/babyBlue</item>
+    </style>
+
+    <style name="MESSSAGE_LEFT_BACKGROUND">
+        <item name="android:background">@drawable/message_left_bg_gradient</item>
+    </style>
+
+    <style name="MESSSAGE_RIGHT_BACKGROUND">
+        <item name="android:background">@drawable/message_right_bg_gradient</item>
+    </style>
+
     <style name="TEXT_INPUT_OUTLINE">
         <item name="android:background">@drawable/text_input_border_outline_light</item>
     </style>

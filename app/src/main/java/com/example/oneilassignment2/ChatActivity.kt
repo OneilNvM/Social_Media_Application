@@ -1,6 +1,7 @@
 package com.example.oneilassignment2
 
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Bundle
@@ -10,11 +11,13 @@ import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -29,6 +32,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
     private lateinit var searchAdapter: SearchContactRecyclerViewAdapter
     private lateinit var contactsAdapter: ContactsRecyclerViewAdapter
     private lateinit var chatDataViewModel: ChatDataViewModel
+    private lateinit var contactsViewModel: ContactsViewModel
 
     private lateinit var chatTopConstraint: ConstraintLayout
     private lateinit var chatDivider1: View
@@ -36,12 +40,14 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
     private lateinit var contactsRecyclerView: RecyclerView
 
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_chat)
 
         chatDataViewModel = ViewModelProvider(this)[ChatDataViewModel::class.java]
+        contactsViewModel = ViewModelProvider(this)[ContactsViewModel::class.java]
 
         db = SchoolSQLiteDatabase(this)
 
@@ -58,6 +64,31 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
         contactsRecyclerView = findViewById(R.id.chat_contacts_recycler_view)
 
         val searchQuery = searchBar.text.toString()
+
+        //        Set back pressed callback to handle back button press
+        onBackPressedDispatcher.addCallback(this, object :
+            OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+//                Go back to previous fragment or exit the app if there is no previous fragment
+                try {
+                    if (supportFragmentManager.backStackEntryCount >= 1) {
+                        supportFragmentManager.popBackStackImmediate()
+
+                        chatTopConstraint.visibility = View.VISIBLE
+                        chatDivider1.visibility = View.VISIBLE
+                        chatDivider2.visibility = View.VISIBLE
+                        contactsRecyclerView.visibility = View.VISIBLE
+                    } else {
+                        val intent = Intent(this@ChatActivity, MainActivity::class.java)
+                        startActivity(intent)
+
+                        finish()
+                    }
+                } catch (e: Exception) {
+                    Log.e(ContentValues.TAG, "Error: ${e.message}")
+                }
+            }
+        })
 
         students = ArrayList()
         contacts = ArrayList()
@@ -124,6 +155,21 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
             startActivity(intent)
 
             finish()
+        }
+
+//        This piece of code observes the ContactsViewModel's refreshValue LiveData and updates the UI accordingly.
+        contactsViewModel.refreshValue.observe(this) {
+                currentValue ->
+            if (currentValue) {
+                contacts.clear()
+
+                addToContacts()
+
+                contactsAdapter.notifyDataSetChanged()
+
+                contactsViewModel.refreshComplete()
+                Log.d("ContactsViewModel", "Refresh Complete")
+            }
         }
 
         addToContacts()
@@ -402,15 +448,16 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
     override fun onContactClicked(contact: ChatData, position: Int) {
         chatDataViewModel.chatData = contact
 
-        chatTopConstraint.visibility = View.GONE
-        chatDivider1.visibility = View.GONE
-        chatDivider2.visibility = View.GONE
-        contactsRecyclerView.visibility = View.GONE
-
-        supportFragmentManager.beginTransaction()
-            .add(R.id.chat_contact_fragment_container, DirectMessageFragment())
-            .addToBackStack("Chat")
-            .commit()
+        supportFragmentManager.commit {
+            setCustomAnimations(
+                R.anim.fade_in_fragment,
+                R.anim.slide_out_fragment,
+                R.anim.fade_in_fragment,
+                R.anim.slide_out_fragment,
+            )
+            add(R.id.chat_contact_fragment_container, DirectMessageFragment())
+            addToBackStack("Chat")
+        }
     }
 
     override fun onStart() {

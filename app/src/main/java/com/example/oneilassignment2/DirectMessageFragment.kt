@@ -14,7 +14,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
-import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,11 +22,13 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 
-class DirectMessageFragment : Fragment() {
+class DirectMessageFragment : Fragment(), ContactsRecyclerViewInterface {
 
     private val chatDataViewModel: ChatDataViewModel by activityViewModels()
+    private val contactsRefreshTrigger: ContactsViewModel by activityViewModels()
     private lateinit var db: SchoolSQLiteDatabase
     private lateinit var messagesList: ArrayList<MessageData>
+    private lateinit var contactsList: ArrayList<ChatData>
     private lateinit var messagesAdapter: MessagesRecyclerViewAdapter
 
     private lateinit var chatActivity: ChatActivity
@@ -53,23 +55,20 @@ class DirectMessageFragment : Fragment() {
         val defaultText = view.findViewById<TextView>(R.id.dm_default_message)
         val backButton = view.findViewById<ImageButton>(R.id.dm_back_button)
 
-        val chatTopConstraint = chatActivity.findViewById<ConstraintLayout>(R.id.chat_top_constraint)
-        val chatDivider1 = chatActivity.findViewById<View>(R.id.chat_divider_1)
-        val chatDivider2 = chatActivity.findViewById<View>(R.id.chat_divider_2)
-        val contactsRecyclerView = chatActivity.findViewById<RecyclerView>(R.id.chat_contacts_recycler_view)
-
-        backButton.setOnClickListener {
-            parentFragmentManager.popBackStack()
-
-            chatTopConstraint.visibility = View.VISIBLE
-            chatDivider1.visibility = View.VISIBLE
-            chatDivider2.visibility = View.VISIBLE
-            contactsRecyclerView.visibility = View.VISIBLE
-        }
-
-        recyclerView.itemAnimator = null
-
+        contactsList = ArrayList()
         messagesList = ArrayList()
+
+        //        Handle UI changes based on dark mode
+        if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+            backButton.setBackgroundResource(R.drawable.baseline_arrow_back_24_white)
+        } else {
+            backButton.setBackgroundResource(R.drawable.ic_arrow_back)
+        }
+        backButton.setOnClickListener {
+            contactsRefreshTrigger.refresh()
+
+            parentFragmentManager.popBackStack()
+        }
 
         val chatData: ChatData
 
@@ -86,14 +85,25 @@ class DirectMessageFragment : Fragment() {
             val formattedDate = SimpleDateFormat("dd/MM/yyyy HH:mm").format(currentDateTime)
 
             try {
-                if (message.isNotEmpty()) {
-                    db.insertMessage(message, formattedDate, chatData.id, userId)
+                if (message.isNotBlank()) {
+                    db.insertMessage(message.trim(), formattedDate, chatData.id, userId)
 
-                    messagesList.clear()
+                    val messageData = MessageData(
+                        message,
+                        formattedDate,
+                        chatData.id,
+                        userId,
+                        true
+                    )
 
-                    addToMessages(chatData.id)
+                    if (chatData.message == null) {
+                        defaultText.visibility = View.INVISIBLE
+                    }
 
-                    messagesAdapter.notifyDataSetChanged()
+
+                    messagesAdapter.insertItem(messageData)
+
+                    recyclerView.scrollToPosition(messagesList.size - 1)
 
                     messageInput.text.clear()
                 } else {
@@ -120,6 +130,8 @@ class DirectMessageFragment : Fragment() {
 
         recyclerView.adapter = messagesAdapter
 
+        recyclerView.scrollToPosition(messagesList.size - 1)
+
         return view
     }
 
@@ -128,12 +140,10 @@ class DirectMessageFragment : Fragment() {
         val userId = userSession.getInt("student_id", 0)
 
         if (chatMessages != null) {
-            Log.d("Add Message", "Count: ${chatMessages.count}")
             if (chatMessages.count > 0) {
                 chatMessages.moveToFirst()
 
                 while (!chatMessages.isAfterLast) {
-                    val messageId = chatMessages.getInt(chatMessages.getColumnIndexOrThrow("message_id"))
                     val messageText = chatMessages.getString(chatMessages.getColumnIndexOrThrow("text"))
                     val messageDate = chatMessages.getString(chatMessages.getColumnIndexOrThrow("date"))
                     val chatId = chatMessages.getInt(chatMessages.getColumnIndexOrThrow("chat_id"))
@@ -141,7 +151,6 @@ class DirectMessageFragment : Fragment() {
 
                     if (studentId == userId) {
                         val message = MessageData(
-                            messageId,
                             messageText,
                             messageDate,
                             chatId,
@@ -150,10 +159,8 @@ class DirectMessageFragment : Fragment() {
                         )
 
                         messagesList.add(message)
-                        Log.d("Add Message", "Chat Id: $chatId")
                     } else {
                         val message = MessageData(
-                            messageId,
                             messageText,
                             messageDate,
                             chatId,
@@ -161,7 +168,6 @@ class DirectMessageFragment : Fragment() {
                         )
 
                         messagesList.add(message)
-                        Log.d("Add Message", "Chat Id: $chatId")
                     }
 
                     chatMessages.moveToNext()
@@ -169,6 +175,20 @@ class DirectMessageFragment : Fragment() {
             }
         }
         chatMessages?.close()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+
+        db.close()
+    }
+
+    override fun onRemoveButtonClicked(contact: ChatData, position: Int) {
+//        Not implemented
+    }
+
+    override fun onContactClicked(contact: ChatData, position: Int) {
+//        Not implemented
     }
 
 }

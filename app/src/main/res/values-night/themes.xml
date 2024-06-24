@@ -12,6 +12,18 @@
         <item name="android:windowBackground">@color/darkNavyBlue2</item>
     </style>
 
+    <style name="MAIN_BACKGROUND">
+        <item name="android:background">@color/darkNavyBlue2</item>
+    </style>
+
+    <style name="MESSSAGE_LEFT_BACKGROUND">
+        <item name="android:background">@drawable/message_left_bg_gradient_dark</item>
+    </style>
+
+    <style name="MESSSAGE_RIGHT_BACKGROUND">
+        <item name="android:background">@drawable/message_right_bg_gradient_dark</item>
+    </style>
+
     <style name="TEXT_INPUT_OUTLINE">
         <item name="android:background">@drawable/text_input_border_outline_dark</item>
     </style>

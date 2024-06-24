@@ -6,5 +6,5 @@ data class ChatData(
     val dateCreated: String,
     val studentId1: Int,
     val studentId2: Int,
-    val message: String?,
+    var message: String?,
 )

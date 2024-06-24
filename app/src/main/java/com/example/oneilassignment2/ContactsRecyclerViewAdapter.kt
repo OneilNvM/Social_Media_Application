@@ -26,10 +26,14 @@ class ContactsRecyclerViewAdapter(private val contacts: ArrayList<ChatData>, pri
         return ViewHolder(view)
     }
 
-    @SuppressLint("NotifyDataSetChanged")
+    @SuppressLint("NotifyDataSetChanged", "SetTextI18n")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.firstName.text = contacts[position].firstName
         holder.previewMessage.text = if (contacts[position].message == null) "Say hi to ${contacts[position].firstName}" else contacts[position].message
+
+        if (holder.previewMessage.text.length > 18 && contacts[position].message != null) {
+            holder.previewMessage.text = holder.previewMessage.text.substring(0, 18) + "..."
+        }
 
         //        Handle UI changes with dark mode
         if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_NO) {
