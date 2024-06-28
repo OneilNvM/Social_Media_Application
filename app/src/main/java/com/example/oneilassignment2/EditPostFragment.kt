@@ -76,7 +76,8 @@ class EditPostFragment : Fragment() {
                     )
 
                     parentFragmentManager.popBackStack()
-                    editPostCaption.setText("")
+
+                    editPostCaption.text.clear()
 
                     Toast.makeText(mainActivity, "Post edited", Toast.LENGTH_SHORT).show()
                 }
@@ -89,7 +90,7 @@ class EditPostFragment : Fragment() {
         cancelEditButton.setOnClickListener {
             parentFragmentManager.popBackStack()
 
-            editPostCaption.setText("")
+            editPostCaption.text.clear()
         }
 
         return view

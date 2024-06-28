@@ -62,9 +62,14 @@ class CommentsRecyclerViewAdapter(private val comments: ArrayList<CommentData>, 
     override fun getItemCount() = comments.size
 
 //    Update function which updates a specific item in the RecyclerView
-    fun updateItems(newComments: ArrayList<CommentData>, position: Int) {
-        comments[position] = newComments[0]
+    fun updateItem(newComment: CommentData, position: Int) {
+        comments[position] = newComment
         notifyItemChanged(position)
+    }
+
+    fun insertItem(newComment: CommentData) {
+        comments.add(0, newComment)
+        notifyItemInserted(0)
     }
 
 }

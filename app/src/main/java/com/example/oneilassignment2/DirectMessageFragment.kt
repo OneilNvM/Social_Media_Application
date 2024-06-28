@@ -100,7 +100,6 @@ class DirectMessageFragment : Fragment(), ContactsRecyclerViewInterface {
                         defaultText.visibility = View.INVISIBLE
                     }
 
-
                     messagesAdapter.insertItem(messageData)
 
                     recyclerView.scrollToPosition(messagesList.size - 1)

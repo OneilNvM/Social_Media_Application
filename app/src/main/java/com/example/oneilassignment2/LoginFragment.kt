@@ -16,6 +16,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.commit
 
 class LoginFragment : Fragment() {
 
@@ -46,6 +47,9 @@ class LoginFragment : Fragment() {
         val mainLoginButton = mainActivity.findViewById<Button>(R.id.main_login_button)
         val registerButton = mainActivity.findViewById<Button>(R.id.main_register_button)
 
+        val mainDivider1 = mainActivity.findViewById<View>(R.id.main_divider_1)
+        val mainDivider2 = mainActivity.findViewById<View>(R.id.main_divider_2)
+
 //        Handle UI changes based on dark mode
         if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
             backButton.setBackgroundResource(R.drawable.baseline_arrow_back_24_white)
@@ -64,11 +68,16 @@ class LoginFragment : Fragment() {
                 mainActivity.supportFragmentManager.popBackStack()
 
                 mainActivity
-                    .supportFragmentManager
-                    .beginTransaction()
-                    .add(R.id.full_frame_fragment_container, AdminFragment())
-                    .addToBackStack(null)
-                    .commit()
+                    .supportFragmentManager.commit {
+                        setCustomAnimations(
+                            R.anim.slide_in_fragment,
+                            R.anim.slide_out_fragment,
+                            R.anim.slide_in_fragment,
+                            R.anim.slide_out_fragment
+                        )
+                        add(R.id.full_frame_fragment_container, AdminFragment())
+                        addToBackStack(null)
+                    }
 
                 mainBackgroundImage.visibility = View.GONE
                 emailInput.text.clear()
@@ -109,11 +118,16 @@ class LoginFragment : Fragment() {
                                 mainActivity.supportFragmentManager.popBackStack()
 
                                 mainActivity
-                                    .supportFragmentManager
-                                    .beginTransaction()
-                                    .replace(R.id.main_fragment_container, HomeFragment())
-                                    .addToBackStack("HOME_FRAGMENT")
-                                    .commit()
+                                    .supportFragmentManager.commit {
+                                        setCustomAnimations(
+                                            R.anim.slide_in_fragment,
+                                            R.anim.slide_out_fragment,
+                                            R.anim.slide_in_fragment,
+                                            R.anim.slide_out_fragment
+                                        )
+                                        replace(R.id.main_fragment_container, HomeFragment())
+                                        addToBackStack("HOME_FRAGMENT")
+                                    }
 
 //                                Set up shared preference for the user session
                                 val userSession =
@@ -130,6 +144,9 @@ class LoginFragment : Fragment() {
                                 mainBackgroundImage.visibility = View.GONE
                                 homeNavBar.visibility = View.VISIBLE
                                 homeTopHeader.visibility = View.VISIBLE
+
+                                mainDivider1.visibility = View.VISIBLE
+                                mainDivider2.visibility = View.VISIBLE
                             }
                         } catch (e: Exception) {
                             Log.e("LoginFragment", "Error: ${e.message}")

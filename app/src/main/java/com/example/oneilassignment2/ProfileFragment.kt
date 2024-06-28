@@ -1,5 +1,7 @@
 package com.example.oneilassignment2
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.ContentValues
@@ -18,12 +20,15 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.cardview.widget.CardView
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.commit
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
 class ProfileFragment : Fragment() {
 
     private lateinit var db: SchoolSQLiteDatabase
+    private val mainActivityViewModel: MainActivityViewModel by activityViewModels()
     @SuppressLint("SetTextI18n", "NotifyDataSetChanged", "SimpleDateFormat",
         "ClickableViewAccessibility"
     )
@@ -72,6 +77,32 @@ class ProfileFragment : Fragment() {
 
         profileHomeButton.setTextColor(resources.getColor(R.color.magenta, null))
 
+        mainActivityViewModel.profileEditValue.observe(mainActivity) {
+            currentValue ->
+
+            if (currentValue) {
+                profileEditCard.animate()
+                    .alpha(0.0f)
+                    .setDuration(300)
+                    .setListener(object: AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            profileEditCard.visibility = View.INVISIBLE
+                            mainActivityViewModel.hideEditCardComplete()
+                        }
+                    })
+
+                chatButton.isClickable = true
+                settingsButton.isClickable = true
+                homeButton.isClickable = true
+                postButton.isClickable = true
+                profileButton.isClickable = true
+                logoutButton.isClickable = true
+                profileLikesButton.isClickable = true
+                profileHomeButton.isClickable = true
+                profileFragment.visibility = View.VISIBLE
+            }
+        }
+
 //        Handle UI changes based on dark mode
         if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
             profileEditBackButton.setBackgroundResource(R.drawable.baseline_arrow_back_24_white)
@@ -80,7 +111,17 @@ class ProfileFragment : Fragment() {
         }
 
         profileEditButton.setOnClickListener {
+            mainActivityViewModel.editCardDisplayed()
+
             profileEditCard.visibility = View.VISIBLE
+            profileEditCard.animate()
+                .alpha(1.0f)
+                .setDuration(300)
+                .setListener(object: AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        profileEditCard.visibility = View.VISIBLE
+                    }
+                })
 
             chatButton.isClickable = false
             settingsButton.isClickable = false
@@ -94,7 +135,15 @@ class ProfileFragment : Fragment() {
         }
 
         profileEditBackButton.setOnClickListener {
-            profileEditCard.visibility = View.GONE
+            mainActivityViewModel.editCardHidden()
+            profileEditCard.animate()
+                .alpha(0.0f)
+                .setDuration(300)
+                .setListener(object: AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        profileEditCard.visibility = View.INVISIBLE
+                    }
+                })
 
             chatButton.isClickable = true
             settingsButton.isClickable = true
@@ -137,7 +186,7 @@ class ProfileFragment : Fragment() {
             var dateOfBirth: String? = profileEditDateOfBirthText.text.toString()
             //            Check the conditions before updating the accounts info
 
-            if (firstName?.isEmpty() == true && surname?.isEmpty() == true && email?.isEmpty() == true && dateOfBirth == getString(
+            if (firstName?.isBlank() == true && surname?.isBlank() == true && email?.isBlank() == true && dateOfBirth == getString(
                     R.string.date_of_birth_text
                 )
             ) {
@@ -145,13 +194,13 @@ class ProfileFragment : Fragment() {
                     .show()
                 return@setOnClickListener
             }
-            if (firstName?.isEmpty() == true) {
+            if (firstName?.isBlank() == true) {
                 firstName = null
             }
-            if (surname?.isEmpty() == true) {
+            if (surname?.isBlank() == true) {
                 surname = null
             }
-            if (email?.isEmpty() == true) {
+            if (email?.isBlank() == true) {
                 email = null
             } else {
                 if (!email!!.endsWith("@school.co.uk")) {
@@ -175,7 +224,14 @@ class ProfileFragment : Fragment() {
                     formattedDate
                 )
 
-                profileEditCard.visibility = View.GONE
+                profileEditCard.animate()
+                    .alpha(0.0f)
+                    .setDuration(300)
+                    .setListener(object: AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            profileEditCard.visibility = View.INVISIBLE
+                        }
+                    })
 
                 if (firstName != null) {
                     userSession.edit().putString("first_name", firstName).apply()
@@ -188,6 +244,18 @@ class ProfileFragment : Fragment() {
                 profileEditSurnameInput.text.clear()
                 profileEditEmailInput.text.clear()
                 profileEditDateOfBirthText.text = getString(R.string.date_of_birth_text)
+
+                chatButton.isClickable = true
+                settingsButton.isClickable = true
+                homeButton.isClickable = true
+                postButton.isClickable = true
+                profileButton.isClickable = true
+                logoutButton.isClickable = true
+                profileLikesButton.isClickable = true
+                profileHomeButton.isClickable = true
+                profileFragment.visibility = View.VISIBLE
+
+                mainActivityViewModel.editCardHidden()
 
                 Toast.makeText(
                     mainActivity,
@@ -223,9 +291,15 @@ class ProfileFragment : Fragment() {
 
         profileHomeButton.setOnClickListener {
             if (parentFragmentManager.findFragmentById(R.id.profile_fragment_container) !is ProfilePostsFragment) {
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.profile_fragment_container, ProfilePostsFragment())
-                    .commit()
+                parentFragmentManager.commit {
+                    setCustomAnimations(
+                        R.anim.slide_in_right,
+                        R.anim.slide_out_from_left,
+                        R.anim.slide_in_right,
+                        R.anim.slide_out_from_left,
+                    )
+                    replace(R.id.profile_fragment_container, ProfilePostsFragment())
+                }
 
                 if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
                     profileLikesButton.setTextColor(resources.getColor(R.color.white, null))
@@ -239,9 +313,15 @@ class ProfileFragment : Fragment() {
 
         profileLikesButton.setOnClickListener {
             if (parentFragmentManager.findFragmentById(R.id.profile_fragment_container) !is ProfileLikesFragment) {
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.profile_fragment_container, ProfileLikesFragment())
-                    .commit()
+                parentFragmentManager.commit {
+                    setCustomAnimations(
+                        R.anim.slide_in_left,
+                        R.anim.slide_out_from_right,
+                        R.anim.slide_in_left,
+                        R.anim.slide_out_from_right,
+                    )
+                    replace(R.id.profile_fragment_container, ProfileLikesFragment())
+                }
 
                 if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
                     profileHomeButton.setTextColor(resources.getColor(R.color.white, null))

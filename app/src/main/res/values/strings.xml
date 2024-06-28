@@ -85,4 +85,5 @@
     <string name="remove_contact_text">Remove Contact</string>
     <string name="message_text">Message</string>
     <string name="send_a_little_hello_to_your_new_friend_text">Send a little \'Hello!\' to your new friend!</string>
+    <string name="no_results_text">No Results</string>
 </resources>

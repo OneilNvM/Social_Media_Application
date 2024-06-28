@@ -1,6 +1,9 @@
 package com.example.oneilassignment2
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
@@ -12,11 +15,13 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SwitchCompat
 import androidx.cardview.widget.CardView
+import androidx.core.view.isVisible
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
@@ -63,6 +68,51 @@ class SettingsActivity : AppCompatActivity() {
         val newPasswordInput = findViewById<EditText>(R.id.settings_reset_password_new_input)
         val confirmReset = findViewById<TextView>(R.id.settings_reset_password_confirm_button)
         val cancelReset = findViewById<ImageView>(R.id.settings_reset_password_cancel_button)
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                try {
+                    if (resetPasswordCard.isVisible) {
+                        resetPasswordCard.animate()
+                            .alpha(0.0f)
+                            .setDuration(300)
+                            .setListener(object: AnimatorListenerAdapter() {
+                                override fun onAnimationEnd(animation: Animator) {
+                                    resetPasswordCard.visibility = View.GONE
+                                }
+                            })
+
+                        resetPasswordButton.isClickable = true
+                        deleteAccountButton.isClickable = true
+                        darkModeSwitch.isClickable = true
+                        closeButton.isClickable = true
+                    } else if (deleteAccountCard.isVisible) {
+                        deleteAccountCard.animate()
+                            .alpha(0.0f)
+                            .setDuration(300)
+                            .setListener(object: AnimatorListenerAdapter() {
+                                override fun onAnimationEnd(animation: Animator) {
+                                    deleteAccountCard.visibility = View.GONE
+                                }
+                            })
+
+                        resetPasswordButton.isClickable = true
+                        deleteAccountButton.isClickable = true
+                        darkModeSwitch.isClickable = true
+                        closeButton.isClickable = true
+                    } else {
+                        val intent = Intent(this@SettingsActivity, MainActivity::class.java)
+
+                        startActivity(intent)
+
+                        finish()
+                    }
+                } catch (e: Exception) {
+                    Log.e(ContentValues.TAG, "Error: ${e.message}")
+                }
+            }
+
+        })
 
         //        Check the current UI configuration and adjust the value of the dark mode switch
         try {
@@ -116,6 +166,14 @@ class SettingsActivity : AppCompatActivity() {
 
         resetPasswordButton.setOnClickListener {
             resetPasswordCard.visibility = View.VISIBLE
+            resetPasswordCard.animate()
+                .alpha(1.0f)
+                .setDuration(300)
+                .setListener(object: AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        resetPasswordCard.visibility = View.VISIBLE
+                    }
+                })
 
             resetPasswordButton.isClickable = false
             deleteAccountButton.isClickable = false
@@ -141,9 +199,9 @@ class SettingsActivity : AppCompatActivity() {
                         val newPassword = newPasswordInput.text.toString()
 
 //                        Checks the conditions before resetting the password
-                        if (oldPasswordInput.text.isEmpty()) {
+                        if (oldPasswordInput.text.isBlank()) {
                             oldPasswordInput.error = "Please enter your current password"
-                        } else if (newPasswordInput.text.isEmpty()) {
+                        } else if (newPasswordInput.text.isBlank()) {
                             newPasswordInput.error = "Please enter your new password"
                         } else if (oldPassword != studentPassword) {
                             oldPasswordInput.error = "This does not match the current password"
@@ -188,7 +246,14 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         cancelReset.setOnClickListener {
-            resetPasswordCard.visibility = View.GONE
+            resetPasswordCard.animate()
+                .alpha(0.0f)
+                .setDuration(300)
+                .setListener(object: AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        resetPasswordCard.visibility = View.GONE
+                    }
+                })
 
             resetPasswordButton.isClickable = true
             deleteAccountButton.isClickable = true
@@ -198,6 +263,14 @@ class SettingsActivity : AppCompatActivity() {
 
         deleteAccountButton.setOnClickListener {
             deleteAccountCard.visibility = View.VISIBLE
+            deleteAccountCard.animate()
+                .alpha(1.0f)
+                .setDuration(300)
+                .setListener(object: AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        deleteAccountCard.visibility = View.VISIBLE
+                    }
+                })
 
             resetPasswordButton.isClickable = false
             deleteAccountButton.isClickable = false
@@ -502,7 +575,14 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         cancelDelete.setOnClickListener {
-            deleteAccountCard.visibility = View.GONE
+            deleteAccountCard.animate()
+                .alpha(0.0f)
+                .setDuration(300)
+                .setListener(object: AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        deleteAccountCard.visibility = View.GONE
+                    }
+                })
 
             resetPasswordButton.isClickable = true
             deleteAccountButton.isClickable = true
@@ -519,7 +599,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        db.close()
         super.onDestroy()
+        db.close()
     }
 }

@@ -23,10 +23,13 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
+import androidx.fragment.app.commit
+import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : AppCompatActivity() {
 
     private var isDarkMode: Boolean = false
+    private lateinit var mainActivityViewModel: MainActivityViewModel
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
@@ -52,6 +55,8 @@ class MainActivity : AppCompatActivity() {
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
             }
         }
+
+        mainActivityViewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
 
 //        Set variables for views
 
@@ -87,11 +92,21 @@ class MainActivity : AppCompatActivity() {
             override fun handleOnBackPressed() {
 //                Go back to previous fragment or exit the app if there is no previous fragment
                 try {
-                    if (supportFragmentManager.findFragmentById(R.id.main_fragment_container) is HomeFragment) {
+                    if (supportFragmentManager.findFragmentById(R.id.comments_fragment_container) is CommentsFragment) {
+                        supportFragmentManager.popBackStack()
+                    } else if (supportFragmentManager.findFragmentById(R.id.main_fragment_container) is HomeFragment) {
                         finish()
-                    }
-                    if (supportFragmentManager.backStackEntryCount > 1) {
-                        supportFragmentManager.popBackStackImmediate()
+                    } else if (supportFragmentManager.backStackEntryCount > 1) {
+                        if (supportFragmentManager.findFragmentById(R.id.main_fragment_container) is ProfileFragment) {
+                            if (mainActivityViewModel.isEditCardVisible.value == true) {
+                                mainActivityViewModel.hideEditCard()
+                                Log.d("Hide Edit Card", "Edit card has been hidden")
+                            } else {
+                                supportFragmentManager.popBackStackImmediate()
+                            }
+                        } else {
+                            supportFragmentManager.popBackStackImmediate()
+                        }
                     } else {
                         finish()
                     }
@@ -193,11 +208,16 @@ their account immediately
             mainHeader3.visibility = View.INVISIBLE
             mainLoginButton.visibility = View.INVISIBLE
             mainRegisterButton.visibility = View.INVISIBLE
-            supportFragmentManager
-                .beginTransaction()
-                .add(R.id.main_fragment_container, loginFragment)
-                .addToBackStack(null)
-                .commit()
+            supportFragmentManager.commit {
+                setCustomAnimations(
+                    R.anim.fade_in_fragment,
+                    R.anim.fade_out_fragment,
+                    R.anim.fade_in_fragment,
+                    R.anim.fade_out_fragment,
+                )
+                add(R.id.main_fragment_container, loginFragment)
+                addToBackStack(null)
+            }
         }
 
         mainRegisterButton.setOnClickListener {
@@ -206,22 +226,32 @@ their account immediately
             mainHeader3.visibility = View.INVISIBLE
             mainLoginButton.visibility = View.INVISIBLE
             mainRegisterButton.visibility = View.INVISIBLE
-            supportFragmentManager
-                .beginTransaction()
-                .add(R.id.main_fragment_container, registerFragment)
-                .addToBackStack(null)
-                .commit()
+            supportFragmentManager.commit {
+                setCustomAnimations(
+                    R.anim.fade_in_fragment,
+                    R.anim.fade_out_fragment,
+                    R.anim.fade_in_fragment,
+                    R.anim.fade_out_fragment,
+                )
+                add(R.id.main_fragment_container, registerFragment)
+                addToBackStack(null)
+            }
         }
 
 //        Open the home fragment
         homeButton.setOnClickListener {
 //            Checks if the home fragment is already open, if so, do nothing
             if (supportFragmentManager.findFragmentById(R.id.main_fragment_container) !is HomeFragment) {
-                supportFragmentManager
-                    .beginTransaction()
-                    .replace(R.id.main_fragment_container, HomeFragment())
-                    .addToBackStack("HOME_FRAGMENT")
-                    .commit()
+                supportFragmentManager.commit {
+                    setCustomAnimations(
+                        R.anim.slide_in_fragment,
+                        R.anim.slide_out_fragment,
+                        R.anim.slide_in_fragment,
+                        R.anim.slide_out_fragment,
+                    )
+                    replace(R.id.main_fragment_container, HomeFragment())
+                    addToBackStack("HOME_FRAGMENT")
+                }
 
                 homeButton.setBackgroundResource(R.drawable.house_1_)
 
@@ -243,10 +273,16 @@ their account immediately
         postButton.setOnClickListener {
             //            Checks if the post fragment is already open, if so, do nothing
             if (supportFragmentManager.findFragmentById(R.id.main_fragment_container) !is PostFragment) {
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_fragment_container, PostFragment())
-                    .addToBackStack(null)
-                    .commit()
+                supportFragmentManager.commit {
+                    setCustomAnimations(
+                        R.anim.slide_in_fragment,
+                        R.anim.slide_out_fragment,
+                        R.anim.slide_in_fragment,
+                        R.anim.slide_out_fragment,
+                    )
+                    replace(R.id.main_fragment_container, PostFragment())
+                    addToBackStack(null)
+                }
 
                 postButton.setBackgroundResource(R.drawable.add_1_)
 
@@ -268,10 +304,16 @@ their account immediately
         profileButton.setOnClickListener {
             if (supportFragmentManager.findFragmentById(R.id.main_fragment_container) !is ProfileFragment) {
                 //            Checks if the profile fragment is already open, if so, do nothing
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_fragment_container, ProfileFragment())
-                    .addToBackStack(null)
-                    .commit()
+                supportFragmentManager.commit {
+                    setCustomAnimations(
+                        R.anim.slide_in_fragment,
+                        R.anim.slide_out_fragment,
+                        R.anim.slide_in_fragment,
+                        R.anim.slide_out_fragment,
+                    )
+                    replace(R.id.main_fragment_container, ProfileFragment())
+                    addToBackStack(null)
+                }
 
                 profileButton.setBackgroundResource(R.drawable.user_1_)
 

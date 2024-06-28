@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -38,6 +39,7 @@ class HomeFragment : Fragment(), HomePostsRecyclerViewInterface {
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.home_swipe_refresh_layout)
 //        Get access to the PostDataViewModel to change its data
         sharedViewModel = ViewModelProvider(mainActivity)[PostDataViewModel::class.java]
+
 
 //        Refresh the RecyclerView to get latest post data
         swipeRefresh.setOnRefreshListener {
@@ -288,10 +290,16 @@ RecyclerView based on whether the user has like the post or not
 //        Send PostData for the specific post to the ViewModel for the CommentsFragment to display its comments
         sharedViewModel.post = post
 
-        parentFragmentManager.beginTransaction()
-            .add(R.id.comments_fragment_container, CommentsFragment())
-            .addToBackStack(null)
-            .commit()
+        parentFragmentManager.commit {
+            setCustomAnimations(
+                R.anim.fade_in_fragment,
+                R.anim.fade_out_fragment,
+                R.anim.fade_in_fragment,
+                R.anim.fade_out_fragment,
+            )
+            add(R.id.comments_fragment_container, CommentsFragment())
+            addToBackStack(null)
+        }
     }
 
     override fun onDestroyView() {

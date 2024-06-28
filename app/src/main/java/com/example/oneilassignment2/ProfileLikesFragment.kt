@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -306,10 +307,16 @@ class ProfileLikesFragment : Fragment(), HomePostsRecyclerViewInterface {
     override fun onCommentButtonClicked(post: PostData, position: Int) {
         sharedViewModel.post = post
 
-        parentFragmentManager.beginTransaction()
-            .add(R.id.comments_fragment_container, CommentsFragment())
-            .addToBackStack(null)
-            .commit()
+        parentFragmentManager.commit {
+            setCustomAnimations(
+                R.anim.fade_in_fragment,
+                R.anim.fade_out_fragment,
+                R.anim.fade_in_fragment,
+                R.anim.fade_out_fragment,
+            )
+            add(R.id.comments_fragment_container, CommentsFragment())
+            addToBackStack(null)
+        }
     }
 
     override fun onDestroyView() {

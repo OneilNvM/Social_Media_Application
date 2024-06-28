@@ -15,6 +15,7 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.fragment.app.commit
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
@@ -133,11 +134,16 @@ class RegisterFragment : Fragment() {
                         mainActivity.supportFragmentManager.popBackStack()
 
 //                        Reloads the login fragment
-                        mainActivity.supportFragmentManager
-                            .beginTransaction()
-                            .replace(R.id.main_fragment_container, LoginFragment())
-                            .addToBackStack(null)
-                            .commit()
+                        mainActivity.supportFragmentManager.commit {
+                            setCustomAnimations(
+                                R.anim.fade_in_fragment,
+                                R.anim.fade_out_fragment,
+                                R.anim.fade_in_fragment,
+                                R.anim.fade_out_fragment,
+                            )
+                            replace(R.id.main_fragment_container, LoginFragment())
+                            addToBackStack(null)
+                        }
                     }
                 } catch (e: Exception) {
                     Log.e("RegisterFragment", "Error: ${e.message}", e)

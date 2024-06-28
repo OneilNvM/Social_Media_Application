@@ -29,7 +29,7 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
 //    Retrieve the post ViewModel
     private val sharedViewModel: PostDataViewModel by activityViewModels()
 
-    @SuppressLint("SetTextI18n", "SimpleDateFormat", "NotifyDataSetChanged",
+    @SuppressLint("SetTextI18n", "SimpleDateFormat",
         "ClickableViewAccessibility"
     )
     override fun onCreateView(
@@ -60,8 +60,6 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
             backButton.setBackgroundResource(R.drawable.ic_arrow_back)
         }
 
-//        Prevent refresh animation on RecyclerView
-        recyclerView.itemAnimator = null
 
 //        Store the data from the ViewModel
         val postData = sharedViewModel
@@ -128,10 +126,26 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
 //                        Update the post with an extra comment
                         db.updatePost(postId, null, null, null, numOfComments.plus(1), null)
 
-//                        Update the RecyclerView with a new comment
-                        arrayOfComments.clear()
+                        val commentsCursor = db.retrieveComments(postId)
 
-                        addCommentsToList(postId)
+                        var commentData: CommentData? = null
+
+                        if (commentsCursor != null) {
+                            val count = commentsCursor.count
+
+                            commentData = CommentData(
+                                count,
+                                commenterName,
+                                commentText,
+                                0,
+                                0,
+                                dateFormat,
+                            )
+                            Log.d("Send Comment", "Count: $count")
+                        }
+                        commentsCursor?.close()
+
+//                        Update the RecyclerView with a new comment
 
                         if (numOfComments.plus(1) == 1) {
                             commentsTitle.text = "${numOfComments + 1} comment"
@@ -139,7 +153,9 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
                             commentsTitle.text = "${numOfComments + 1} comments"
                         }
 
-                        rcvAdapter.notifyDataSetChanged()
+                        rcvAdapter.insertItem(commentData!!)
+
+                        recyclerView.scrollToPosition(0)
 
                         commentInput.text.clear()
 
@@ -258,14 +274,10 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
                         )
                     }
 
-                    val newArrayOfComments = ArrayList<CommentData>()
-
-                    newArrayOfComments.add(commentData)
-
                     db.deleteLike(likeId)
                     db.updateComment(commentId, null, null, comment.likes.minus(1), null)
 
-                    rcvAdapter.updateItems(newArrayOfComments, position)
+                    rcvAdapter.updateItem(commentData, position)
                 } else {
                     val commentData: CommentData
                     if (comment.isDisliked) {
@@ -291,14 +303,10 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
                         )
                     }
 
-                    val newArrayOfComments = ArrayList<CommentData>()
-
-                    newArrayOfComments.add(commentData)
-
                     db.insertCommentLike(studentId, commentId)
                     db.updateComment(commentId, null, null, comment.likes.plus(1), null)
 
-                    rcvAdapter.updateItems(newArrayOfComments, position)
+                    rcvAdapter.updateItem(commentData, position)
                 }
             }
         } catch (e: Exception) {
@@ -347,14 +355,10 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
                         )
                     }
 
-                    val newArrayOfComments = ArrayList<CommentData>()
-
-                    newArrayOfComments.add(commentData)
-
                     db.deleteDislike(dislikeId)
                     db.updateComment(commentId, null, null, null, comment.dislikes.minus(1))
 
-                    rcvAdapter.updateItems(newArrayOfComments, position)
+                    rcvAdapter.updateItem(commentData, position)
                 } else {
                     val commentData: CommentData
                     if (comment.isLiked) {
@@ -381,14 +385,10 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
                         )
                     }
 
-                    val newArrayOfComments = ArrayList<CommentData>()
-
-                    newArrayOfComments.add(commentData)
-
                     db.insertCommentDislike(studentId, commentId)
                     db.updateComment(commentId, null, null, null, comment.dislikes.plus(1))
 
-                    rcvAdapter.updateItems(newArrayOfComments, position)
+                    rcvAdapter.updateItem(commentData, position)
                 }
             }
         } catch (e: Exception) {

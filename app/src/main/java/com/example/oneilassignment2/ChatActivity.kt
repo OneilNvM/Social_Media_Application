@@ -1,5 +1,7 @@
 package com.example.oneilassignment2
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Intent
@@ -11,12 +13,14 @@ import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -57,6 +61,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
         val searchBar = findViewById<EditText>(R.id.chat_search_box)
         val addContactBackButton = findViewById<ImageButton>(R.id.chat_add_contact_back_button)
         val addContactRecyclerView = findViewById<RecyclerView>(R.id.chat_add_contact_recycler_view)
+        val noResultsText = findViewById<TextView>(R.id.chat_no_results_text)
 
         chatTopConstraint = findViewById(R.id.chat_top_constraint)
         chatDivider1 = findViewById(R.id.chat_divider_1)
@@ -71,7 +76,24 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
             override fun handleOnBackPressed() {
 //                Go back to previous fragment or exit the app if there is no previous fragment
                 try {
-                    if (supportFragmentManager.backStackEntryCount >= 1) {
+                    if (addContactCard.isVisible) {
+                        addContactCard.animate()
+                            .alpha(0.0f)
+                            .setDuration(250)
+                            .setListener(object : AnimatorListenerAdapter() {
+                                override fun onAnimationEnd(animation: Animator) {
+                                    addContactCard.visibility = View.GONE
+                                }
+                            })
+
+                        students.clear()
+
+                        searchBar.text.clear()
+
+                        closeButton.isClickable = true
+                        addContactButton.isClickable = true
+                        contactsRecyclerView.visibility = View.VISIBLE
+                    } else if (supportFragmentManager.backStackEntryCount >= 1) {
                         supportFragmentManager.popBackStackImmediate()
 
                         chatTopConstraint.visibility = View.VISIBLE
@@ -95,6 +117,14 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
 
         addContactButton.setOnClickListener {
             addContactCard.visibility = View.VISIBLE
+            addContactCard.animate()
+                .setDuration(250)
+                .alpha(1.0f)
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        addContactCard.visibility = View.VISIBLE
+                    }
+                })
 
             val textWatcher = object : TextWatcher {
                 override fun beforeTextChanged(
@@ -115,6 +145,12 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
                     students.clear()
 
                     addToSearches(s.toString())
+
+                    if (students.size == 0) {
+                        noResultsText.visibility = View.VISIBLE
+                    } else {
+                        noResultsText.visibility = View.GONE
+                    }
 
                     searchAdapter.notifyDataSetChanged()
                 }
@@ -139,7 +175,14 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
         }
 
         addContactBackButton.setOnClickListener {
-            addContactCard.visibility = View.GONE
+            addContactCard.animate()
+                .alpha(0.0f)
+                .setDuration(250)
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        addContactCard.visibility = View.GONE
+                    }
+                })
 
             students.clear()
 
@@ -183,13 +226,12 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
     }
 
     private fun addToSearches(search: String) {
-        if (search.isEmpty()) {
+        if (search.isBlank()) {
             return
         } else {
             val studentSearch = db.searchStudents(search)
             val userSession = this.getSharedPreferences("USER_SESSION", MODE_PRIVATE)
             val userId = userSession.getInt("student_id", 0)
-
 
             if (studentSearch != null) {
                 if (studentSearch.count > 0) {
@@ -201,48 +243,50 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
                         val firstName =
                             studentSearch.getString(studentSearch.getColumnIndexOrThrow("first_name"))
 
-                        val chats = db.retrieveMultipleChats(studentId)
+                        if (studentId != userId) {
+                            val chats = db.retrieveMultipleChats(studentId)
 
-                        if (chats != null) {
-                            if (chats.count > 0) {
-                                chats.moveToFirst()
-                                while (!chats.isAfterLast) {
-                                    val studentId1 =
-                                        chats.getInt(chats.getColumnIndexOrThrow("student_id1"))
-                                    val studentId2 =
-                                        chats.getInt(chats.getColumnIndexOrThrow("student_id2"))
+                            if (chats != null) {
+                                if (chats.count > 0) {
+                                    chats.moveToFirst()
+                                    while (!chats.isAfterLast) {
+                                        val studentId1 =
+                                            chats.getInt(chats.getColumnIndexOrThrow("student_id1"))
+                                        val studentId2 =
+                                            chats.getInt(chats.getColumnIndexOrThrow("student_id2"))
 
-                                    if (studentId1 == userId || studentId2 == userId) {
-                                        val studentData = StudentData(
-                                            studentId,
-                                            firstName,
-                                            true
-                                        )
+                                        if (studentId1 == userId || studentId2 == userId) {
+                                            val studentData = StudentData(
+                                                studentId,
+                                                firstName,
+                                                true
+                                            )
 
-                                        students.add(studentData)
-                                    } else {
-                                        val studentData = StudentData(
-                                            studentId,
-                                            firstName,
-                                            false
-                                        )
+                                            students.add(studentData)
+                                        } else {
+                                            val studentData = StudentData(
+                                                studentId,
+                                                firstName,
+                                                false
+                                            )
 
-                                        students.add(studentData)
+                                            students.add(studentData)
+                                        }
+                                        chats.moveToNext()
                                     }
-                                    chats.moveToNext()
+                                } else {
+                                    val studentData = StudentData(
+                                        studentId,
+                                        firstName,
+                                        false
+                                    )
+
+                                    students.add(studentData)
+
                                 }
-                            } else {
-                                val studentData = StudentData(
-                                    studentId,
-                                    firstName,
-                                    false
-                                )
-
-                                students.add(studentData)
-
                             }
+                            chats?.close()
                         }
-                        chats?.close()
 
                         studentSearch.moveToNext()
                     }
