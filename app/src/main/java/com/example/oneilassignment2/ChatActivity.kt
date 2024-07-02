@@ -244,7 +244,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
                             studentSearch.getString(studentSearch.getColumnIndexOrThrow("first_name"))
 
                         if (studentId != userId) {
-                            val chats = db.retrieveMultipleChats(studentId)
+                            val chats = db.retrieveMultipleChats(userId)
 
                             if (chats != null) {
                                 if (chats.count > 0) {
@@ -255,7 +255,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
                                         val studentId2 =
                                             chats.getInt(chats.getColumnIndexOrThrow("student_id2"))
 
-                                        if (studentId1 == userId || studentId2 == userId) {
+                                        if (studentId1 == studentId || studentId2 == studentId) {
                                             val studentData = StudentData(
                                                 studentId,
                                                 firstName,
@@ -263,6 +263,8 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
                                             )
 
                                             students.add(studentData)
+
+                                            break
                                         } else {
                                             val studentData = StudentData(
                                                 studentId,

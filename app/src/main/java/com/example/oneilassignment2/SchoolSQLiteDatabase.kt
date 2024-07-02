@@ -431,6 +431,11 @@ class SchoolSQLiteDatabase(context: Context): SQLiteOpenHelper(context, "SCHOOL_
         db.delete(chatsTable, "$chatId = ?", arrayOf(id.toString()))
     }
 
+    fun deleteStudentChats(studentID: Int) {
+        val db = writableDatabase
+        db.delete(chatsTable, "$chatsStudentIDRef1 = ? OR $chatsStudentIDRef2 = ?", arrayOf(studentID.toString(), studentID.toString()))
+    }
+
     fun retrieveChat(chatId: Int): Cursor? {
         val db = readableDatabase
         return db.rawQuery("SELECT * FROM $chatsTable WHERE $chatId = $chatId", null)

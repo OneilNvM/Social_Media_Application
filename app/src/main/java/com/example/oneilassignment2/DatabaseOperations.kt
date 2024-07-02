@@ -277,12 +277,35 @@ class DatabaseOperations(ctx: Context) {
             }
             studentPosts?.close()
 
+//            Handle deletion of chat messages in all of the chats they are involved in
+            val studentChats = db.retrieveMultipleChats(id)
+
+            if (studentChats != null) {
+                if (studentChats.count > 0) {
+                    studentChats.moveToFirst()
+
+//                    While loop loops through the chats that the user is involved in and handles
+//                    the deletion of the chat messages
+                    while (!studentChats.isAfterLast) {
+//                        Grab the chat Id
+                        val chatId = studentChats.getInt(studentChats.getColumnIndexOrThrow("chat_id"))
+
+//                        Delete the messages in the chat
+                        db.deleteChatMessages(chatId)
+
+                        studentChats.moveToNext()
+                    }
+                }
+            }
+            studentChats?.close()
+
 //                Performs final deletes after referential data has been updated and/ or deleted
             db.deleteStudent(id)
             db.deleteStudentPosts(id)
             db.deleteStudentComments(id)
             db.deleteStudentLikes(id)
             db.deleteStudentDislikes(id)
+            db.deleteStudentChats(id)
 
             return true
         } catch (e: Exception) {
