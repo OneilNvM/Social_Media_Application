@@ -1,5 +1,7 @@
 package com.example.oneilassignment2
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,8 +46,17 @@ class SearchContactRecyclerViewAdapter(private val students: ArrayList<StudentDa
 
     override fun getItemCount() = students.size
 
+
     fun updateItems(newItems: ArrayList<StudentData>, position: Int) {
         students[position] = newItems[0]
         notifyItemChanged(position)
+    }
+
+    fun updateItemRange(newItems: ArrayList<StudentData>) {
+        Log.d("UpdateItemRange", "NewItems Size: ${newItems.size}")
+        students.clear()
+        students.addAll(newItems)
+        Log.d("UpdateItemRange", "Student Size: ${students.size}")
+        notifyItemRangeInserted(0, students.size)
     }
 }

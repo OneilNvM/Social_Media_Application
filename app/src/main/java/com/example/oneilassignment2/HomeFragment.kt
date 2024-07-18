@@ -1,11 +1,9 @@
 package com.example.oneilassignment2
 
 import android.annotation.SuppressLint
-import android.content.ContentValues.TAG
 import android.content.Context.MODE_PRIVATE
 import android.database.Cursor
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -40,11 +38,12 @@ class HomeFragment : Fragment(), HomePostsRecyclerViewInterface {
 //        Get access to the PostDataViewModel to change its data
         sharedViewModel = ViewModelProvider(mainActivity)[PostDataViewModel::class.java]
 
+        val listMethods = RecyclerViewListMethods(mainActivity)
 
 //        Refresh the RecyclerView to get latest post data
         swipeRefresh.setOnRefreshListener {
             listOfPosts.clear()
-            addPostsToList()
+            listMethods.addPostsToList(listOfPosts)
             rcvAdapter.notifyDataSetChanged()
             swipeRefresh.isRefreshing = false
         }
@@ -56,7 +55,7 @@ class HomeFragment : Fragment(), HomePostsRecyclerViewInterface {
 
         listOfPosts = ArrayList()
 
-        addPostsToList()
+        listMethods.addPostsToList(listOfPosts)
 
         rcvPosts.layoutManager = LinearLayoutManager(mainActivity)
         rcvAdapter = HomePostsRecyclerViewAdapter(listOfPosts, this)
@@ -64,59 +63,6 @@ class HomeFragment : Fragment(), HomePostsRecyclerViewInterface {
         rcvPosts.adapter = rcvAdapter
 
         return view
-    }
-
-//    Function to add the posts to the list for the RecyclerView to display
-    private fun addPostsToList() {
-        val userSession = requireActivity().getSharedPreferences("USER_SESSION", MODE_PRIVATE)
-        val userId = userSession.getInt("student_id", 0)
-        val cursor: Cursor? = db.retrieveAllPosts()
-
-        try {
-            if (cursor != null) {
-                if (cursor.count > 0) {
-                    cursor.moveToFirst()
-                    while (!cursor.isAfterLast) {
-                        val postId = cursor.getInt(cursor.getColumnIndexOrThrow("post_id"))
-                        val posterId = cursor.getInt(cursor.getColumnIndexOrThrow("student_id"))
-                        val posterName =
-                            cursor.getString(cursor.getColumnIndexOrThrow("poster_name"))
-                        val postCaption = cursor.getString(cursor.getColumnIndexOrThrow("caption"))
-                        val postDate = cursor.getString(cursor.getColumnIndexOrThrow("date"))
-                        val numLikes = cursor.getInt(cursor.getColumnIndexOrThrow("num_of_likes"))
-                        val numComments =
-                            cursor.getInt(cursor.getColumnIndexOrThrow("num_of_comments"))
-
-                        val isLikedCursor = db.retrieveLike(postId, userId)
-                        var isLiked = false
-
-                        if (isLikedCursor != null) {
-                            isLiked = isLikedCursor.count > 0
-                        }
-
-                        isLikedCursor?.close()
-
-                        val post = PostData(
-                            postId,
-                            posterId,
-                            posterName,
-                            postCaption,
-                            numLikes,
-                            numComments,
-                            postDate,
-                            isLiked
-                        )
-
-                        listOfPosts.add(post)
-
-                        cursor.moveToNext()
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error: Posts could not be added to list")
-        }
-        cursor?.close()
     }
 
 /*    This function is called when the like button is pressed and updates the database and

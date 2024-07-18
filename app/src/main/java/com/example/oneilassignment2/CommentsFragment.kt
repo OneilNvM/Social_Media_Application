@@ -53,13 +53,14 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
         val sendButton = view.findViewById<TextView>(R.id.comments_send_button)
         val backButton = view.findViewById<ImageButton>(R.id.comments_back_button)
 
+        val listMethods = RecyclerViewListMethods(mainActivity)
+
 //        Handle UI changes based on dark mode
         if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
             backButton.setBackgroundResource(R.drawable.baseline_arrow_back_24_white)
         } else {
             backButton.setBackgroundResource(R.drawable.ic_arrow_back)
         }
-
 
 //        Store the data from the ViewModel
         val postData = sharedViewModel
@@ -90,7 +91,7 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
 
 //        Add the comments to the list if postId is not null
         if (postId != null) {
-            addCommentsToList(postId)
+            arrayOfComments = listMethods.addCommentsToList(postId, arrayOfComments)
         } else {
             Log.d(TAG, "onCreateView: postId is null")
         }
@@ -170,69 +171,6 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
         }
 
         return view
-    }
-
-//    Function retrieves all the comments for the post and adds the comments to the list
-    private fun addCommentsToList(postId: Int) {
-        val cursor = db.retrieveCommentsOrderedByCommentId(postId)
-        val userSession = requireActivity().getSharedPreferences("USER_SESSION", MODE_PRIVATE)
-        val userId = userSession.getInt("student_id", 0)
-
-        try {
-            if (cursor != null) {
-                if (cursor.count > 0) {
-                    cursor.moveToFirst()
-
-                    while (!cursor.isAfterLast) {
-                        val commentId = cursor.getInt(cursor.getColumnIndexOrThrow("comment_id"))
-                        val commenterName =
-                            cursor.getString(cursor.getColumnIndexOrThrow("commenter_name"))
-                        val commentText = cursor.getString(cursor.getColumnIndexOrThrow("text"))
-                        val numOfLikes = cursor.getInt(cursor.getColumnIndexOrThrow("num_of_likes"))
-                        val numOfDislikes =
-                            cursor.getInt(cursor.getColumnIndexOrThrow("num_of_dislikes"))
-                        val commentDate = cursor.getString(cursor.getColumnIndexOrThrow("date"))
-
-                        val isLikedCursor = db.retrieveCommentLike(commentId, userId)
-                        var isLiked = false
-
-                        if (isLikedCursor != null) {
-                            isLiked = isLikedCursor.count > 0
-                        }
-
-                        isLikedCursor?.close()
-
-                        val isDislikedCursor = db.retrieveCommentDislike(commentId, userId)
-                        var isDisliked = false
-
-                        if (isDislikedCursor != null) {
-                            isDisliked = isDislikedCursor.count > 0
-                        }
-
-                        isDislikedCursor?.close()
-
-                        val commentData = CommentData(
-                            commentId,
-                            commenterName,
-                            commentText,
-                            numOfLikes,
-                            numOfDislikes,
-                            commentDate,
-                            isLiked,
-                            isDisliked
-                        )
-
-                        arrayOfComments.add(commentData)
-
-                        cursor.moveToNext()
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error: ${e.message}")
-            Toast.makeText(requireActivity(), "Error trying to retrieve comments", Toast.LENGTH_SHORT).show()
-        }
-        cursor?.close()
     }
 
 //    Interface function which checks if the comment has been liked and updates the RecyclerView with the new data

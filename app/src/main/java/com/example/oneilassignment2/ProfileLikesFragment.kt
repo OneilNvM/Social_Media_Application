@@ -19,6 +19,12 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 class ProfileLikesFragment : Fragment(), HomePostsRecyclerViewInterface {
 
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var noLikesText: TextView
+
+    private lateinit var mainActivity: MainActivity
+
     private lateinit var sharedViewModel: PostDataViewModel
     private lateinit var listOfPosts: ArrayList<PostData>
     private lateinit var rcvAdapter: HomePostsRecyclerViewAdapter
@@ -31,14 +37,14 @@ class ProfileLikesFragment : Fragment(), HomePostsRecyclerViewInterface {
     ): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_profile_likes, container, false)
-        val mainActivity = requireActivity() as MainActivity
+        mainActivity = requireActivity() as MainActivity
         sharedViewModel = ViewModelProvider(mainActivity)[PostDataViewModel::class.java]
 
         db = SchoolSQLiteDatabase(mainActivity)
 
-        val recyclerView = view.findViewById<RecyclerView>(R.id.profile_likes_recycler_view)
-        val swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.profile_likes_swipe_refresh)
-        val noLikesText = view.findViewById<TextView>(R.id.profile_likes_text)
+        recyclerView = view.findViewById(R.id.profile_likes_recycler_view)
+        swipeRefreshLayout = view.findViewById(R.id.profile_likes_swipe_refresh)
+        noLikesText = view.findViewById(R.id.profile_likes_text)
 
         //        Setup the swipe refresh functionality for the recycler view
         swipeRefreshLayout.setOnRefreshListener {
@@ -66,16 +72,35 @@ class ProfileLikesFragment : Fragment(), HomePostsRecyclerViewInterface {
 
         if (listOfPosts.isEmpty()) {
             noLikesText.text = getString(R.string.no_likes_text)
-        } else {
-            noLikesText.visibility = View.GONE
-
-            recyclerView.layoutManager = LinearLayoutManager(mainActivity)
-
-            rcvAdapter = HomePostsRecyclerViewAdapter(listOfPosts, this)
-
-            recyclerView.adapter = rcvAdapter
+            noLikesText.visibility = View.VISIBLE
         }
+
+        recyclerView.layoutManager = LinearLayoutManager(mainActivity)
+
+        rcvAdapter = HomePostsRecyclerViewAdapter(listOfPosts, this)
+
+        recyclerView.adapter = rcvAdapter
+
         return view
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    override fun onResume() {
+        super.onResume()
+
+        listOfPosts.clear()
+
+        addPostsToList()
+
+        if (listOfPosts.isEmpty()) {
+            noLikesText.text = getString(R.string.no_likes_text)
+            noLikesText.visibility = View.VISIBLE
+        } else {
+
+            rcvAdapter.notifyDataSetChanged()
+
+            noLikesText.visibility = View.GONE
+        }
     }
 
     private fun addPostsToList() {
@@ -320,7 +345,10 @@ class ProfileLikesFragment : Fragment(), HomePostsRecyclerViewInterface {
     }
 
     override fun onDestroyView() {
-        db.close()
         super.onDestroyView()
+
+        listOfPosts.clear()
+
+        db.close()
     }
 }

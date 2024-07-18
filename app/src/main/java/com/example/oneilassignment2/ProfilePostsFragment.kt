@@ -19,6 +19,12 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
 
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var noPostsText: TextView
+
+    private lateinit var mainActivity: MainActivity
+
     private lateinit var sharedViewModel: PostDataViewModel
     private lateinit var listOfPosts: ArrayList<PostData>
     private lateinit var rcvAdapter: ProfileRecyclerViewAdapter
@@ -31,14 +37,14 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
     ): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_profile_posts, container, false)
-        val mainActivity = requireActivity() as MainActivity
+        mainActivity = requireActivity() as MainActivity
         sharedViewModel = ViewModelProvider(mainActivity)[PostDataViewModel::class.java]
 
         db = SchoolSQLiteDatabase(mainActivity)
 
-        val swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.profile_posts_swipe_refresh)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.profile_posts_recycler_view)
-        val noPostsText = view.findViewById<TextView>(R.id.profile_posts_text)
+        swipeRefreshLayout = view.findViewById(R.id.profile_posts_swipe_refresh)
+        recyclerView = view.findViewById(R.id.profile_posts_recycler_view)
+        noPostsText = view.findViewById(R.id.profile_posts_text)
 
         //        Setup the swipe refresh functionality for the recycler view
         swipeRefreshLayout.setOnRefreshListener {
@@ -66,17 +72,35 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
 
         if (listOfPosts.isEmpty()) {
             noPostsText.text = getString(R.string.no_posts_text)
-        } else {
-            noPostsText.visibility = View.GONE
-
-            recyclerView.layoutManager = LinearLayoutManager(mainActivity)
-
-            rcvAdapter = ProfileRecyclerViewAdapter(listOfPosts, this)
-
-            recyclerView.adapter = rcvAdapter
+            noPostsText.visibility = View.VISIBLE
         }
 
+        recyclerView.layoutManager = LinearLayoutManager(mainActivity)
+
+        rcvAdapter = ProfileRecyclerViewAdapter(listOfPosts, this)
+
+        recyclerView.adapter = rcvAdapter
+
         return view
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    override fun onResume() {
+        super.onResume()
+
+        listOfPosts.clear()
+
+        addPostsToList()
+
+        if (listOfPosts.isEmpty()) {
+            noPostsText.text = getString(R.string.no_posts_text)
+            noPostsText.visibility = View.VISIBLE
+        } else {
+
+            rcvAdapter.notifyDataSetChanged()
+
+            noPostsText.visibility = View.GONE
+        }
     }
 
     private fun addPostsToList() {
@@ -331,7 +355,10 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
     }
 
     override fun onDestroyView() {
-        db.close()
         super.onDestroyView()
+
+        listOfPosts.clear()
+
+        db.close()
     }
 }

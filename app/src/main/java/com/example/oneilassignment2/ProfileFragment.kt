@@ -4,7 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
-import android.content.ContentValues
+import android.content.ContentValues.TAG
 import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import android.util.Log
@@ -14,22 +14,34 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.cardview.widget.CardView
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.commit
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+private const val NUM_PAGES = 2
+
 class ProfileFragment : Fragment() {
 
+    private lateinit var profileLikesButton: Button
+    private lateinit var profileHomeButton: Button
+
+    private lateinit var profilePostsFragment: ProfilePostsFragment
+    private lateinit var profileLikesFragment: ProfileLikesFragment
+
+    private lateinit var viewPager: ViewPager2
     private lateinit var db: SchoolSQLiteDatabase
     private val mainActivityViewModel: MainActivityViewModel by activityViewModels()
-    @SuppressLint("SetTextI18n", "NotifyDataSetChanged", "SimpleDateFormat",
+
+    @SuppressLint(
+        "SetTextI18n", "NotifyDataSetChanged", "SimpleDateFormat",
         "ClickableViewAccessibility"
     )
     override fun onCreateView(
@@ -62,29 +74,64 @@ class ProfileFragment : Fragment() {
         val profileEditCard = view.findViewById<CardView>(R.id.profile_edit_card)
         val profileEditBackButton = view.findViewById<ImageButton>(R.id.profile_edit_back_button)
         val profileEditSaveButton = view.findViewById<Button>(R.id.profile_edit_update_button)
-        val profileEditFirstNameInput = view.findViewById<EditText>(R.id.profile_edit_firstname_input)
+        val profileEditFirstNameInput =
+            view.findViewById<EditText>(R.id.profile_edit_firstname_input)
         val profileEditSurnameInput = view.findViewById<EditText>(R.id.profile_edit_surname_input)
         val profileEditEmailInput = view.findViewById<EditText>(R.id.profile_edit_email_input)
         val profileEditDateOfBirthButton = view.findViewById<Button>(R.id.profile_edit_dob_button)
         val profileEditDateOfBirthText = view.findViewById<TextView>(R.id.profile_edit_dob_text)
-        val profileHomeButton = view.findViewById<Button>(R.id.profile_home_button)
-        val profileLikesButton = view.findViewById<Button>(R.id.profile_likes_button)
-        val profileFragment = view.findViewById<FrameLayout>(R.id.profile_fragment_container)
 
-        parentFragmentManager.beginTransaction()
-            .add(R.id.profile_fragment_container, ProfilePostsFragment())
-            .commit()
+        profileHomeButton = view.findViewById(R.id.profile_home_button)
+        profileLikesButton = view.findViewById(R.id.profile_likes_button)
+
+        profilePostsFragment = ProfilePostsFragment()
+        profileLikesFragment = ProfileLikesFragment()
+
+        viewPager = view.findViewById(R.id.profile_viewpager2)
+
+        val viewPagerAdapter = ProfileAdapter(requireActivity())
+
+        viewPager.adapter = viewPagerAdapter
+
+        viewPager.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+
+                val currentFragment = viewPagerAdapter.createFragment(position)
+
+                when (currentFragment) {
+                    profilePostsFragment -> {
+                        if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+                            profileLikesButton.setTextColor(resources.getColor(R.color.white, null))
+                        } else {
+                            profileLikesButton.setTextColor(resources.getColor(R.color.black, null))
+                        }
+                        profileHomeButton.setTextColor(resources.getColor(R.color.magenta, null))
+                    }
+                    profileLikesFragment -> {
+                        if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+                            profileHomeButton.setTextColor(resources.getColor(R.color.white, null))
+                        } else {
+                            profileHomeButton.setTextColor(resources.getColor(R.color.black, null))
+                        }
+                        profileLikesButton.setTextColor(resources.getColor(R.color.magenta, null))
+                    }
+                    else -> {
+                        throw IllegalStateException("Invalid position: $position")
+                    }
+                }
+            }
+        })
 
         profileHomeButton.setTextColor(resources.getColor(R.color.magenta, null))
 
-        mainActivityViewModel.profileEditValue.observe(mainActivity) {
-            currentValue ->
+        mainActivityViewModel.profileEditValue.observe(mainActivity) { currentValue ->
 
             if (currentValue) {
                 profileEditCard.animate()
                     .alpha(0.0f)
                     .setDuration(300)
-                    .setListener(object: AnimatorListenerAdapter() {
+                    .setListener(object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator) {
                             profileEditCard.visibility = View.INVISIBLE
                             mainActivityViewModel.hideEditCardComplete()
@@ -99,7 +146,6 @@ class ProfileFragment : Fragment() {
                 logoutButton.isClickable = true
                 profileLikesButton.isClickable = true
                 profileHomeButton.isClickable = true
-                profileFragment.visibility = View.VISIBLE
             }
         }
 
@@ -117,7 +163,7 @@ class ProfileFragment : Fragment() {
             profileEditCard.animate()
                 .alpha(1.0f)
                 .setDuration(300)
-                .setListener(object: AnimatorListenerAdapter() {
+                .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         profileEditCard.visibility = View.VISIBLE
                     }
@@ -131,7 +177,7 @@ class ProfileFragment : Fragment() {
             logoutButton.isClickable = false
             profileLikesButton.isClickable = false
             profileHomeButton.isClickable = false
-            profileFragment.visibility = View.INVISIBLE
+            viewPager.visibility = View.GONE
         }
 
         profileEditBackButton.setOnClickListener {
@@ -139,7 +185,7 @@ class ProfileFragment : Fragment() {
             profileEditCard.animate()
                 .alpha(0.0f)
                 .setDuration(300)
-                .setListener(object: AnimatorListenerAdapter() {
+                .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         profileEditCard.visibility = View.INVISIBLE
                     }
@@ -153,7 +199,7 @@ class ProfileFragment : Fragment() {
             logoutButton.isClickable = true
             profileLikesButton.isClickable = true
             profileHomeButton.isClickable = true
-            profileFragment.visibility = View.VISIBLE
+            viewPager.visibility = View.VISIBLE
         }
 
         //        Create date picker dialog when date of birth button is clicked
@@ -227,7 +273,7 @@ class ProfileFragment : Fragment() {
                 profileEditCard.animate()
                     .alpha(0.0f)
                     .setDuration(300)
-                    .setListener(object: AnimatorListenerAdapter() {
+                    .setListener(object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator) {
                             profileEditCard.visibility = View.INVISIBLE
                         }
@@ -253,7 +299,6 @@ class ProfileFragment : Fragment() {
                 logoutButton.isClickable = true
                 profileLikesButton.isClickable = true
                 profileHomeButton.isClickable = true
-                profileFragment.visibility = View.VISIBLE
 
                 mainActivityViewModel.editCardHidden()
 
@@ -285,55 +330,51 @@ class ProfileFragment : Fragment() {
                 }
             }
         } catch (e: Exception) {
-            Log.e(ContentValues.TAG, "Cursor error: ${e.message}")
+            Log.e(TAG, "Cursor error: ${e.message}")
         }
         student?.close()
 
         profileHomeButton.setOnClickListener {
-            if (parentFragmentManager.findFragmentById(R.id.profile_fragment_container) !is ProfilePostsFragment) {
-                parentFragmentManager.commit {
-                    setCustomAnimations(
-                        R.anim.slide_in_right,
-                        R.anim.slide_out_from_left,
-                        R.anim.slide_in_right,
-                        R.anim.slide_out_from_left,
-                    )
-                    replace(R.id.profile_fragment_container, ProfilePostsFragment())
-                }
-
+            if (viewPager.currentItem == 1) {
                 if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
                     profileLikesButton.setTextColor(resources.getColor(R.color.white, null))
                 } else {
                     profileLikesButton.setTextColor(resources.getColor(R.color.black, null))
                 }
-
+                viewPager.currentItem = 0
                 profileHomeButton.setTextColor(resources.getColor(R.color.magenta, null))
             }
         }
 
         profileLikesButton.setOnClickListener {
-            if (parentFragmentManager.findFragmentById(R.id.profile_fragment_container) !is ProfileLikesFragment) {
-                parentFragmentManager.commit {
-                    setCustomAnimations(
-                        R.anim.slide_in_left,
-                        R.anim.slide_out_from_right,
-                        R.anim.slide_in_left,
-                        R.anim.slide_out_from_right,
-                    )
-                    replace(R.id.profile_fragment_container, ProfileLikesFragment())
-                }
-
+            if (viewPager.currentItem == 0) {
                 if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
                     profileHomeButton.setTextColor(resources.getColor(R.color.white, null))
                 } else {
                     profileHomeButton.setTextColor(resources.getColor(R.color.black, null))
                 }
 
+                viewPager.currentItem = 1
                 profileLikesButton.setTextColor(resources.getColor(R.color.magenta, null))
             }
         }
 
         return view
+    }
+
+    private inner class ProfileAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
+        override fun getItemCount(): Int = NUM_PAGES
+
+        override fun createFragment(position: Int): Fragment {
+            return when (position) {
+                0 -> profilePostsFragment
+
+                1 -> profileLikesFragment
+
+                else -> throw IllegalStateException("Invalid position: $position")
+            }
+        }
+
     }
 
     override fun onDestroyView() {

@@ -31,7 +31,7 @@ private lateinit var db: SchoolSQLiteDatabase
 
 class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, ContactsRecyclerViewInterface {
 
-    private lateinit var students: ArrayList<StudentData>
+    private lateinit var studentsA: ArrayList<StudentData>
     private lateinit var contacts: ArrayList<ChatData>
     private lateinit var searchAdapter: SearchContactRecyclerViewAdapter
     private lateinit var contactsAdapter: ContactsRecyclerViewAdapter
@@ -42,6 +42,8 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
     private lateinit var chatDivider1: View
     private lateinit var chatDivider2: View
     private lateinit var contactsRecyclerView: RecyclerView
+
+    private lateinit var listMethods: RecyclerViewListMethods
 
 
     @SuppressLint("NotifyDataSetChanged")
@@ -68,7 +70,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
         chatDivider2 = findViewById(R.id.chat_divider_2)
         contactsRecyclerView = findViewById(R.id.chat_contacts_recycler_view)
 
-        val searchQuery = searchBar.text.toString()
+        listMethods = RecyclerViewListMethods(this)
 
         //        Set back pressed callback to handle back button press
         onBackPressedDispatcher.addCallback(this, object :
@@ -86,7 +88,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
                                 }
                             })
 
-                        students.clear()
+                        studentsA.clear()
 
                         searchBar.text.clear()
 
@@ -112,7 +114,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
             }
         })
 
-        students = ArrayList()
+        studentsA = ArrayList()
         contacts = ArrayList()
 
         addContactButton.setOnClickListener {
@@ -142,17 +144,20 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
 
                 @SuppressLint("NotifyDataSetChanged")
                 override fun afterTextChanged(s: Editable?) {
-                    students.clear()
+                    studentsA.clear()
 
-                    addToSearches(s.toString())
+                    studentsA = listMethods.addToSearches(s.toString(), studentsA)
 
-                    if (students.size == 0) {
+                    Log.d("TotalStudents", "Here are the students: $studentsA")
+
+                    if (studentsA.size == 0) {
                         noResultsText.visibility = View.VISIBLE
                     } else {
                         noResultsText.visibility = View.GONE
                     }
 
-                    searchAdapter.notifyDataSetChanged()
+                    Log.d("TotalStudents", "Number of Students: ${studentsA.size}")
+                    searchAdapter.updateItemRange(studentsA)
                 }
 
             }
@@ -161,9 +166,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
 
             searchBar.addTextChangedListener(textWatcher)
 
-            addToSearches(searchQuery)
-
-            searchAdapter = SearchContactRecyclerViewAdapter(students, this)
+            searchAdapter = SearchContactRecyclerViewAdapter(studentsA, this)
 
             addContactRecyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -184,7 +187,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
                     }
                 })
 
-            students.clear()
+            studentsA.clear()
 
             searchBar.text.clear()
 
@@ -206,7 +209,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
             if (currentValue) {
                 contacts.clear()
 
-                addToContacts()
+                contacts = listMethods.addToContacts(contacts)
 
                 contactsAdapter.notifyDataSetChanged()
 
@@ -215,7 +218,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
             }
         }
 
-        addToContacts()
+        contacts = listMethods.addToContacts(contacts)
 
         contactsAdapter = ContactsRecyclerViewAdapter(contacts, this)
 
@@ -223,199 +226,6 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
 
         contactsRecyclerView.adapter = contactsAdapter
 
-    }
-
-    private fun addToSearches(search: String) {
-        if (search.isBlank()) {
-            return
-        } else {
-            val studentSearch = db.searchStudents(search)
-            val userSession = this.getSharedPreferences("USER_SESSION", MODE_PRIVATE)
-            val userId = userSession.getInt("student_id", 0)
-
-            if (studentSearch != null) {
-                if (studentSearch.count > 0) {
-                    studentSearch.moveToFirst()
-
-                    while (!studentSearch.isAfterLast) {
-                        val studentId =
-                            studentSearch.getInt(studentSearch.getColumnIndexOrThrow("student_id"))
-                        val firstName =
-                            studentSearch.getString(studentSearch.getColumnIndexOrThrow("first_name"))
-
-                        if (studentId != userId) {
-                            val chats = db.retrieveMultipleChats(userId)
-
-                            if (chats != null) {
-                                if (chats.count > 0) {
-                                    chats.moveToFirst()
-                                    while (!chats.isAfterLast) {
-                                        val studentId1 =
-                                            chats.getInt(chats.getColumnIndexOrThrow("student_id1"))
-                                        val studentId2 =
-                                            chats.getInt(chats.getColumnIndexOrThrow("student_id2"))
-
-                                        if (studentId1 == studentId || studentId2 == studentId) {
-                                            val studentData = StudentData(
-                                                studentId,
-                                                firstName,
-                                                true
-                                            )
-
-                                            students.add(studentData)
-
-                                            break
-                                        } else {
-                                            val studentData = StudentData(
-                                                studentId,
-                                                firstName,
-                                                false
-                                            )
-
-                                            students.add(studentData)
-                                        }
-                                        chats.moveToNext()
-                                    }
-                                } else {
-                                    val studentData = StudentData(
-                                        studentId,
-                                        firstName,
-                                        false
-                                    )
-
-                                    students.add(studentData)
-
-                                }
-                            }
-                            chats?.close()
-                        }
-
-                        studentSearch.moveToNext()
-                    }
-                }
-            }
-            studentSearch?.close()
-            Log.d("AddToSearches", "Number of students added: ${students.size}")
-        }
-    }
-
-    private fun addToContacts() {
-        val userId = this.getSharedPreferences("USER_SESSION", MODE_PRIVATE).getInt("student_id", 0)
-        val currentContacts = db.retrieveMultipleChats(userId)
-
-        if (currentContacts != null) {
-            if (currentContacts.count > 0) {
-                currentContacts.moveToFirst()
-
-                while (!currentContacts.isAfterLast) {
-                    val chatId =
-                        currentContacts.getInt(currentContacts.getColumnIndexOrThrow("chat_id"))
-                    val dateCreated =
-                        currentContacts.getString(currentContacts.getColumnIndexOrThrow("date_created"))
-                    val studentId1 =
-                        currentContacts.getInt(currentContacts.getColumnIndexOrThrow("student_id1"))
-                    val studentId2 =
-                        currentContacts.getInt(currentContacts.getColumnIndexOrThrow("student_id2"))
-
-                    if (studentId1 == userId) {
-                        val student = db.retrieveStudent(studentId2)
-
-                        if (student != null) {
-                            if (student.count > 0) {
-                                student.moveToFirst()
-
-                                val studentName =
-                                    student.getString(student.getColumnIndexOrThrow("first_name"))
-
-                                val message = db.retrieveLastMessage(chatId)
-
-                                if (message != null) {
-                                    if (message.count > 0) {
-                                        message.moveToFirst()
-
-                                        val messageText =
-                                            message.getString(message.getColumnIndexOrThrow("text"))
-
-                                        val chat = ChatData(
-                                            chatId,
-                                            studentName,
-                                            dateCreated,
-                                            studentId1,
-                                            studentId2,
-                                            messageText
-                                        )
-
-                                        contacts.add(chat)
-                                    } else {
-                                        val chat = ChatData(
-                                            chatId,
-                                            studentName,
-                                            dateCreated,
-                                            studentId1,
-                                            studentId2,
-                                            null
-                                        )
-
-                                        contacts.add(chat)
-                                    }
-                                }
-                                message?.close()
-                            }
-                        }
-                        student?.close()
-                    } else {
-                        val student = db.retrieveStudent(studentId1)
-
-                        if (student != null) {
-                            if (student.count > 0) {
-                                student.moveToFirst()
-
-                                val studentName =
-                                    student.getString(student.getColumnIndexOrThrow("first_name"))
-
-                                val message = db.retrieveLastMessage(chatId)
-
-                                if (message != null) {
-                                    if (message.count > 0) {
-                                        message.moveToFirst()
-
-                                        val messageText =
-                                            message.getString(message.getColumnIndexOrThrow("text"))
-
-                                        val chat = ChatData(
-                                            chatId,
-                                            studentName,
-                                            dateCreated,
-                                            studentId1,
-                                            studentId2,
-                                            messageText
-                                        )
-
-                                        contacts.add(chat)
-                                    } else {
-                                        val chat = ChatData(
-                                            chatId,
-                                            studentName,
-                                            dateCreated,
-                                            studentId1,
-                                            studentId2,
-                                            null
-                                        )
-
-                                        contacts.add(chat)
-                                    }
-                                }
-                                message?.close()
-                            }
-                        }
-                        student?.close()
-                    }
-
-                    currentContacts.moveToNext()
-                }
-            }
-        }
-        currentContacts?.close()
     }
 
     @SuppressLint("SimpleDateFormat", "NotifyDataSetChanged")
@@ -440,7 +250,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
 
             contacts.clear()
 
-            addToContacts()
+            contacts = listMethods.addToContacts(contacts)
 
             contactsAdapter.notifyDataSetChanged()
         } else {
@@ -468,7 +278,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
 
             contacts.clear()
 
-            addToContacts()
+            contacts = listMethods.addToContacts(contacts)
 
             contactsAdapter.notifyDataSetChanged()
         }
