@@ -31,6 +31,8 @@ class DirectMessageFragment : Fragment(), ContactsRecyclerViewInterface {
     private lateinit var contactsList: ArrayList<ChatData>
     private lateinit var messagesAdapter: MessagesRecyclerViewAdapter
 
+    private lateinit var listMethods: RecyclerViewListMethods
+
     private lateinit var chatActivity: ChatActivity
     private lateinit var userSession: SharedPreferences
 
@@ -47,6 +49,8 @@ class DirectMessageFragment : Fragment(), ContactsRecyclerViewInterface {
         db = SchoolSQLiteDatabase(chatActivity)
         userSession = chatActivity.getSharedPreferences("USER_SESSION", MODE_PRIVATE)
         val userId = userSession.getInt("student_id", 0)
+
+        listMethods = RecyclerViewListMethods(chatActivity)
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.dm_recycler_view)
         val contactName = view.findViewById<TextView>(R.id.dm_contact_name)
@@ -118,7 +122,7 @@ class DirectMessageFragment : Fragment(), ContactsRecyclerViewInterface {
 
         if (chatData.message != null) {
             defaultText.visibility = View.GONE
-            addToMessages(chatData.id)
+            listMethods.addToMessages(chatData.id, messagesList)
         } else {
             defaultText.visibility = View.VISIBLE
         }
@@ -132,48 +136,6 @@ class DirectMessageFragment : Fragment(), ContactsRecyclerViewInterface {
         recyclerView.scrollToPosition(messagesList.size - 1)
 
         return view
-    }
-
-    private fun addToMessages(id: Int) {
-        val chatMessages = db.retrieveMessagesByChat(id)
-        val userId = userSession.getInt("student_id", 0)
-
-        if (chatMessages != null) {
-            if (chatMessages.count > 0) {
-                chatMessages.moveToFirst()
-
-                while (!chatMessages.isAfterLast) {
-                    val messageText = chatMessages.getString(chatMessages.getColumnIndexOrThrow("text"))
-                    val messageDate = chatMessages.getString(chatMessages.getColumnIndexOrThrow("date"))
-                    val chatId = chatMessages.getInt(chatMessages.getColumnIndexOrThrow("chat_id"))
-                    val studentId = chatMessages.getInt(chatMessages.getColumnIndexOrThrow("student_id"))
-
-                    if (studentId == userId) {
-                        val message = MessageData(
-                            messageText,
-                            messageDate,
-                            chatId,
-                            studentId,
-                            true
-                        )
-
-                        messagesList.add(message)
-                    } else {
-                        val message = MessageData(
-                            messageText,
-                            messageDate,
-                            chatId,
-                            studentId
-                        )
-
-                        messagesList.add(message)
-                    }
-
-                    chatMessages.moveToNext()
-                }
-            }
-        }
-        chatMessages?.close()
     }
 
     override fun onDestroyView() {

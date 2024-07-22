@@ -1,11 +1,9 @@
 package com.example.oneilassignment2
 
 import android.annotation.SuppressLint
-import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -24,6 +22,8 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
     private lateinit var noPostsText: TextView
 
     private lateinit var mainActivity: MainActivity
+
+    private lateinit var listMethods: RecyclerViewListMethods
 
     private lateinit var sharedViewModel: PostDataViewModel
     private lateinit var listOfPosts: ArrayList<PostData>
@@ -46,6 +46,8 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
         recyclerView = view.findViewById(R.id.profile_posts_recycler_view)
         noPostsText = view.findViewById(R.id.profile_posts_text)
 
+        listMethods = RecyclerViewListMethods(mainActivity)
+
         //        Setup the swipe refresh functionality for the recycler view
         swipeRefreshLayout.setOnRefreshListener {
             if (listOfPosts.isEmpty()) {
@@ -53,7 +55,7 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
                 return@setOnRefreshListener
             } else {
                 listOfPosts.clear()
-                addPostsToList()
+                listMethods.addPostsToProfilePostsList(listOfPosts)
                 if (listOfPosts.isEmpty()) {
                     noPostsText.text = getString(R.string.no_posts_text)
                     noPostsText.visibility = View.VISIBLE
@@ -68,7 +70,7 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
 
         listOfPosts = ArrayList()
 
-        addPostsToList()
+        listMethods.addPostsToProfilePostsList(listOfPosts)
 
         if (listOfPosts.isEmpty()) {
             noPostsText.text = getString(R.string.no_posts_text)
@@ -90,7 +92,7 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
 
         listOfPosts.clear()
 
-        addPostsToList()
+        listMethods.addPostsToProfilePostsList(listOfPosts)
 
         if (listOfPosts.isEmpty()) {
             noPostsText.text = getString(R.string.no_posts_text)
@@ -103,59 +105,7 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
         }
     }
 
-    private fun addPostsToList() {
-        val userSession = requireActivity().getSharedPreferences("USER_SESSION",
-            Context.MODE_PRIVATE
-        )
-        val userId = userSession.getInt("student_id", 0)
-        val cursor: Cursor? = db.retrieveStudentPosts(userId)
 
-        try {
-            if (cursor != null) {
-                if (cursor.count > 0) {
-                    cursor.moveToFirst()
-                    while (!cursor.isAfterLast) {
-                        val postId = cursor.getInt(cursor.getColumnIndexOrThrow("post_id"))
-                        val posterId = cursor.getInt(cursor.getColumnIndexOrThrow("student_id"))
-                        val posterName =
-                            cursor.getString(cursor.getColumnIndexOrThrow("poster_name"))
-                        val postCaption = cursor.getString(cursor.getColumnIndexOrThrow("caption"))
-                        val postDate = cursor.getString(cursor.getColumnIndexOrThrow("date"))
-                        val numLikes = cursor.getInt(cursor.getColumnIndexOrThrow("num_of_likes"))
-                        val numComments =
-                            cursor.getInt(cursor.getColumnIndexOrThrow("num_of_comments"))
-
-                        val isLikedCursor = db.retrieveLike(postId, userId)
-                        var isLiked = false
-
-                        if (isLikedCursor != null) {
-                            isLiked = isLikedCursor.count > 0
-                        }
-
-                        isLikedCursor?.close()
-
-                        val post = PostData(
-                            postId,
-                            posterId,
-                            posterName,
-                            postCaption,
-                            numLikes,
-                            numComments,
-                            postDate,
-                            isLiked
-                        )
-
-                        listOfPosts.add(post)
-
-                        cursor.moveToNext()
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(ContentValues.TAG, "Error trying to add posts to list: ${e.message}")
-        }
-        cursor?.close()
-    }
 
     //    Interface function handles click events on the like button on the posts
     override fun onLikeButtonClicked(post: PostData, position: Int) {
@@ -325,6 +275,7 @@ class ProfilePostsFragment : Fragment(), ProfileRecyclerViewInterface {
     //    Interface function handles click events on the comment button on the posts
     override fun onCommentButtonClicked(post: PostData, position: Int) {
         sharedViewModel.post = post
+        sharedViewModel.currentValue(post.numOfComments)
 
         parentFragmentManager.commit {
             setCustomAnimations(

@@ -146,6 +146,7 @@ class ProfileFragment : Fragment() {
                 logoutButton.isClickable = true
                 profileLikesButton.isClickable = true
                 profileHomeButton.isClickable = true
+                viewPager.visibility = View.VISIBLE
             }
         }
 

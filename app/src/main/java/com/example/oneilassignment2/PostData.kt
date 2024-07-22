@@ -6,7 +6,7 @@ data class PostData (
     val postersName: String,
     val caption: String,
     val numOfLikes: Int,
-    val numOfComments: Int,
+    var numOfComments: Int,
     val dateAndTime: String,
     val isLiked: Boolean = false
 )

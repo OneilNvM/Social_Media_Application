@@ -65,21 +65,37 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
 //        Store the data from the ViewModel
         val postData = sharedViewModel
         val postId = postData.post?.postId
-        val numOfComments = postData.post?.numOfComments
+        val numOfComments = postData.numOfCommentsListener
 
+        Log.d(TAG, "Listener noc: ${postData.numOfCommentsListener.value}")
+
+        postData.isIncreasing.observe(mainActivity) {
+            currentValue ->
+
+            if (currentValue) {
+                if (numOfComments.value != null) {
+                    postData.increaseValue(numOfComments.value!!)
+                    postData.increaseComplete()
+                    Log.d(TAG, "Increase complete")
+                    Log.d(TAG, "No. of comments: ${numOfComments.value}")
+                } else {
+                    Log.d(TAG, "Increase failed")
+                }
+            }
+        }
 
 //        Set the title to the correct number of comments
-        when (postData.post?.numOfComments) {
+        when (numOfComments.value) {
             0 -> {
                 commentsTitle.text = "No Comments"
             }
 
             1 -> {
-                commentsTitle.text = "$numOfComments comment"
+                commentsTitle.text = "${numOfComments.value} comment"
             }
 
             else -> {
-                commentsTitle.text = "$numOfComments comments"
+                commentsTitle.text = "${numOfComments.value} comments"
             }
         }
 
@@ -91,7 +107,7 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
 
 //        Add the comments to the list if postId is not null
         if (postId != null) {
-            arrayOfComments = listMethods.addCommentsToList(postId, arrayOfComments)
+            listMethods.addCommentsToList(postId, arrayOfComments)
         } else {
             Log.d(TAG, "onCreateView: postId is null")
         }
@@ -108,7 +124,7 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
                 commentInput.error = "Please enter a comment"
             } else {
 //                Check if the post id and number of comments are not null
-                if (postId != null && numOfComments != null) {
+                if (postId != null) {
                     try {
                         val commenterId = userSession.getInt("student_id", 0)
                         val commenterName = userSession.getString("first_name", "")
@@ -125,7 +141,9 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
                             postId
                         )
 //                        Update the post with an extra comment
-                        db.updatePost(postId, null, null, null, numOfComments.plus(1), null)
+                        db.updatePost(postId, null, null, null, numOfComments.value!!.plus(1), null)
+
+                        postData.initiateIncrease()
 
                         val commentsCursor = db.retrieveComments(postId)
 
@@ -142,17 +160,16 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
                                 0,
                                 dateFormat,
                             )
+
+                            if (numOfComments.value!!.plus(1) == 1) {
+                                commentsTitle.text = "${numOfComments.value} comment"
+                            } else {
+                                commentsTitle.text = "${numOfComments.value} comments"
+                                Log.d(TAG, "Here is the updated number: ${numOfComments.value}")
+                            }
                             Log.d("Send Comment", "Count: $count")
                         }
                         commentsCursor?.close()
-
-//                        Update the RecyclerView with a new comment
-
-                        if (numOfComments.plus(1) == 1) {
-                            commentsTitle.text = "${numOfComments + 1} comment"
-                        } else {
-                            commentsTitle.text = "${numOfComments + 1} comments"
-                        }
 
                         rcvAdapter.insertItem(commentData!!)
 

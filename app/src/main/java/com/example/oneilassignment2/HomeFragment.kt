@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context.MODE_PRIVATE
 import android.database.Cursor
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -43,7 +44,7 @@ class HomeFragment : Fragment(), HomePostsRecyclerViewInterface {
 //        Refresh the RecyclerView to get latest post data
         swipeRefresh.setOnRefreshListener {
             listOfPosts.clear()
-            listMethods.addPostsToList(listOfPosts)
+            listMethods.addPostsToHomeList(listOfPosts)
             rcvAdapter.notifyDataSetChanged()
             swipeRefresh.isRefreshing = false
         }
@@ -55,7 +56,7 @@ class HomeFragment : Fragment(), HomePostsRecyclerViewInterface {
 
         listOfPosts = ArrayList()
 
-        listMethods.addPostsToList(listOfPosts)
+        listMethods.addPostsToHomeList(listOfPosts)
 
         rcvPosts.layoutManager = LinearLayoutManager(mainActivity)
         rcvAdapter = HomePostsRecyclerViewAdapter(listOfPosts, this)
@@ -235,6 +236,8 @@ RecyclerView based on whether the user has like the post or not
     override fun onCommentButtonClicked(post: PostData, position: Int) {
 //        Send PostData for the specific post to the ViewModel for the CommentsFragment to display its comments
         sharedViewModel.post = post
+        sharedViewModel.currentValue(post.numOfComments)
+        Log.d("HomeFragment", "No. of comments: ${post.numOfComments}")
 
         parentFragmentManager.commit {
             setCustomAnimations(

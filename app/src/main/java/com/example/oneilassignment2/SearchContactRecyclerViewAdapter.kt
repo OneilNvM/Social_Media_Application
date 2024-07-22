@@ -51,12 +51,4 @@ class SearchContactRecyclerViewAdapter(private val students: ArrayList<StudentDa
         students[position] = newItems[0]
         notifyItemChanged(position)
     }
-
-    fun updateItemRange(newItems: ArrayList<StudentData>) {
-        Log.d("UpdateItemRange", "NewItems Size: ${newItems.size}")
-        students.clear()
-        students.addAll(newItems)
-        Log.d("UpdateItemRange", "Student Size: ${students.size}")
-        notifyItemRangeInserted(0, students.size)
-    }
 }

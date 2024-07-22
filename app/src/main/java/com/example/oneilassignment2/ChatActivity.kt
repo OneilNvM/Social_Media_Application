@@ -146,7 +146,9 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
                 override fun afterTextChanged(s: Editable?) {
                     studentsA.clear()
 
-                    studentsA = listMethods.addToSearches(s.toString(), studentsA)
+                    listMethods.addToSearches(s.toString(), studentsA)
+
+//                    addToSearches(s.toString())
 
                     Log.d("TotalStudents", "Here are the students: $studentsA")
 
@@ -157,7 +159,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
                     }
 
                     Log.d("TotalStudents", "Number of Students: ${studentsA.size}")
-                    searchAdapter.updateItemRange(studentsA)
+                    searchAdapter.notifyDataSetChanged()
                 }
 
             }
@@ -209,7 +211,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
             if (currentValue) {
                 contacts.clear()
 
-                contacts = listMethods.addToContacts(contacts)
+                listMethods.addToContacts(contacts)
 
                 contactsAdapter.notifyDataSetChanged()
 
@@ -218,7 +220,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
             }
         }
 
-        contacts = listMethods.addToContacts(contacts)
+        listMethods.addToContacts(contacts)
 
         contactsAdapter = ContactsRecyclerViewAdapter(contacts, this)
 
@@ -250,7 +252,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
 
             contacts.clear()
 
-            contacts = listMethods.addToContacts(contacts)
+            listMethods.addToContacts(contacts)
 
             contactsAdapter.notifyDataSetChanged()
         } else {
@@ -278,7 +280,7 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
 
             contacts.clear()
 
-            contacts = listMethods.addToContacts(contacts)
+            listMethods.addToContacts(contacts)
 
             contactsAdapter.notifyDataSetChanged()
         }
