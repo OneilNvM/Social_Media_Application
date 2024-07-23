@@ -177,6 +177,8 @@ class CommentsFragment : Fragment(), CommentsRecyclerViewInterface {
 
                         commentInput.text.clear()
 
+                        postData.recyclerViewRefresh()
+
                         Toast.makeText(mainActivity, "Comment added", Toast.LENGTH_SHORT).show()
                     } catch (e: Exception) {
                         Toast.makeText(mainActivity, "Error trying to send comment", Toast.LENGTH_SHORT).show()

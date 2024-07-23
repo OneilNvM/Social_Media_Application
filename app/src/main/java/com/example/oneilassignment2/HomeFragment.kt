@@ -41,6 +41,16 @@ class HomeFragment : Fragment(), HomePostsRecyclerViewInterface {
 
         val listMethods = RecyclerViewListMethods(mainActivity)
 
+        sharedViewModel.recyclerViewRefreshTrigger.observe(mainActivity) {
+            currentValue ->
+            if (currentValue) {
+                listOfPosts.clear()
+                listMethods.addPostsToHomeList(listOfPosts)
+                rcvAdapter.notifyDataSetChanged()
+                sharedViewModel.recyclerViewRefreshComplete()
+            }
+        }
+
 //        Refresh the RecyclerView to get latest post data
         swipeRefresh.setOnRefreshListener {
             listOfPosts.clear()

@@ -148,8 +148,6 @@ class ChatActivity : AppCompatActivity(), SearchContactRecyclerViewInterface, Co
 
                     listMethods.addToSearches(s.toString(), studentsA)
 
-//                    addToSearches(s.toString())
-
                     Log.d("TotalStudents", "Here are the students: $studentsA")
 
                     if (studentsA.size == 0) {

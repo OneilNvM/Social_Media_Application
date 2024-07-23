@@ -1,7 +1,5 @@
 package com.example.oneilassignment2
 
-import android.content.ContentValues.TAG
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
